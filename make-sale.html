@@ -189,6 +189,10 @@
     .close-button:hover {
       background-color: #dc2626; /* Darker red on hover */
     }
+    .flex-end {
+      display: flex;
+      justify-content: flex-end;
+    }
   </style>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -222,10 +226,15 @@
     <!-- Make a Sale Section -->
     <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mb-8">
       <h2 class="text-xl font-semibold mb-4 dark:text-white"><i class="fas fa-cash-register mr-2"></i>Make a Sale</h2>
-      <!-- Add Client Button -->
-      <button onclick="openAddClientModal()" class="gray-button">
-        <i class="fas fa-user-plus mr-2"></i>Add Client
-      </button>
+      <!-- Buttons for Add Client and Choose Client -->
+      <div class="flex justify-between mb-4">
+        <button onclick="openChooseClientModal()" class="gray-button">
+          <i class="fas fa-users mr-2"></i>Choose Client
+        </button>
+        <button onclick="openAddClientModal()" class="gray-button">
+          <i class="fas fa-user-plus mr-2"></i>Add Client
+        </button>
+      </div>
       <!-- Sale Table -->
       <table class="sale-table">
         <thead>
@@ -243,7 +252,7 @@
       </table>
       <!-- Add Item Button -->
       <button onclick="openAddItemModal()" class="gray-button mt-4">
-        <i class="fas fa-plus mr-2"></i>Add Item
+        <i class="fas fa-plus mr-2"></i>Select Item
       </button>
       <!-- Total and Generate Receipt -->
       <div class="flex justify-between items-center mt-4">
@@ -263,9 +272,12 @@
       <table class="sale-table">
         <thead>
           <tr>
+            <th>Invoice Number</th>
             <th>Date</th>
             <th>Client</th>
             <th>Total Amount</th>
+            <th>Payment Method</th>
+            <th>Status</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -287,6 +299,17 @@
         <button type="submit" class="gray-button">Add Client</button>
       </form>
       <button onclick="closeModal('addClientModal')" class="close-button mt-2">Close</button>
+    </div>
+  </div>
+
+  <!-- Choose Client Modal -->
+  <div id="chooseClientModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-users mr-2"></i>Choose Client</h3>
+      <div id="clientList" class="mb-4">
+        <!-- Clients will be dynamically added here -->
+      </div>
+      <button onclick="closeModal('chooseClientModal')" class="close-button">Close</button>
     </div>
   </div>
 
@@ -334,10 +357,29 @@
     const clients = [];
     const salesHistory = [];
     let currentSale = [];
+    let selectedClient = null;
 
     // Open Add Client Modal
     function openAddClientModal() {
       document.getElementById('addClientModal').classList.remove('hidden');
+    }
+
+    // Open Choose Client Modal
+    function openChooseClientModal() {
+      const clientList = document.getElementById('clientList');
+      clientList.innerHTML = clients.map(client => `
+        <div class="p-2 border-b dark:border-gray-600">
+          <input type="radio" name="client" value="${client.name}" onchange="selectClient('${client.name}')">
+          <span class="ml-2">${client.name}</span>
+        </div>
+      `).join('');
+      document.getElementById('chooseClientModal').classList.remove('hidden');
+    }
+
+    // Select Client
+    function selectClient(clientName) {
+      selectedClient = clientName;
+      closeModal('chooseClientModal');
     }
 
     // Open Add Item Modal
@@ -424,7 +466,14 @@
       doc.text(`Total: ${total.toFixed(2)}`, 10, y + 10);
 
       doc.save('receipt.pdf');
-      salesHistory.push({ date: new Date().toLocaleDateString(), total });
+      salesHistory.push({ 
+        invoiceNumber: `INV-${salesHistory.length + 1}`, 
+        date: new Date().toLocaleDateString(), 
+        client: selectedClient || 'N/A', 
+        total, 
+        paymentMethod: 'Cash', 
+        status: 'Paid' 
+      });
       currentSale = [];
       updateSaleTable();
       updateSalesHistory();
@@ -435,10 +484,13 @@
       const salesHistoryBody = document.getElementById('salesHistoryBody');
       salesHistoryBody.innerHTML = salesHistory.map(sale => `
         <tr>
+          <td>${sale.invoiceNumber}</td>
           <td>${sale.date}</td>
-          <td>${sale.client || 'N/A'}</td>
+          <td>${sale.client}</td>
           <td>${sale.total.toFixed(2)}</td>
-          <td><button onclick="viewReceipt('${sale.date}')" class="text-blue-500 hover:text-blue-700"><i class="fas fa-eye"></i></button></td>
+          <td>${sale.paymentMethod}</td>
+          <td>${sale.status}</td>
+          <td><button onclick="viewReceipt('${sale.invoiceNumber}')" class="text-blue-500 hover:text-blue-700"><i class="fas fa-eye"></i></button></td>
         </tr>
       `).join('');
     }
@@ -448,22 +500,26 @@
       const searchTerm = e.target.value.toLowerCase();
       const filteredSales = salesHistory.filter(sale =>
         sale.date.toLowerCase().includes(searchTerm) ||
-        (sale.client && sale.client.toLowerCase().includes(searchTerm))
+        (sale.client && sale.client.toLowerCase().includes(searchTerm)) ||
+        sale.invoiceNumber.toLowerCase().includes(searchTerm)
       );
       const salesHistoryBody = document.getElementById('salesHistoryBody');
       salesHistoryBody.innerHTML = filteredSales.map(sale => `
         <tr>
+          <td>${sale.invoiceNumber}</td>
           <td>${sale.date}</td>
-          <td>${sale.client || 'N/A'}</td>
+          <td>${sale.client}</td>
           <td>${sale.total.toFixed(2)}</td>
-          <td><button onclick="viewReceipt('${sale.date}')" class="text-blue-500 hover:text-blue-700"><i class="fas fa-eye"></i></button></td>
+          <td>${sale.paymentMethod}</td>
+          <td>${sale.status}</td>
+          <td><button onclick="viewReceipt('${sale.invoiceNumber}')" class="text-blue-500 hover:text-blue-700"><i class="fas fa-eye"></i></button></td>
         </tr>
       `).join('');
     });
 
     // View Receipt (Placeholder)
-    function viewReceipt(date) {
-      alert(`Viewing receipt for sale on ${date}`);
+    function viewReceipt(invoiceNumber) {
+      alert(`Viewing receipt for invoice ${invoiceNumber}`);
     }
 
     // Chatbot Functions
