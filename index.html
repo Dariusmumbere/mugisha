@@ -435,16 +435,7 @@
 
   <!-- JavaScript -->
   <script>
-    const products = [];
-    const stockItems = [];
-    const services = [];
-    let totalSales = 0;
-    let grossProfit = 0;
-    let totalExpenses = 0;
-    let debtorsBalance = 0;
-    let netProfit = 0;
-    let stockBalance = 0;
-    const recentTransactions = [];
+    const backendUrl = 'https://postgresq.onrender.com'; // Replace with your Render backend URL
 
     // Dark/Light Mode Toggle
     const themeToggle = document.getElementById('themeToggle');
@@ -454,11 +445,9 @@
       htmlElement.classList.toggle('dark');
       
       if (htmlElement.classList.contains('dark')) {
-        console.log('Switching to Dark Mode');
         themeIcon.classList.remove('fa-moon');
         themeIcon.classList.add('fa-sun');
       } else {
-        console.log('Switching to Light Mode');
         themeIcon.classList.remove('fa-sun');
         themeIcon.classList.add('fa-moon');
       }
@@ -472,14 +461,16 @@
     // Open Stock Management Modal
     function openStockManagementModal() {
       document.getElementById('stockManagementModal').classList.remove('hidden');
-      updateStockTable();
+      fetchStock();
     }
 
     // Open Add Stock Modal
     function openAddStockModal() {
-      const stockItemSelect = document.getElementById('stockItemSelect');
-      stockItemSelect.innerHTML = '<option value="" disabled selected>Select Product</option>' +
-        products.map(product => `<option value="${product.name}">${product.name}</option>`).join('');
+      fetchProducts().then(products => {
+        const stockItemSelect = document.getElementById('stockItemSelect');
+        stockItemSelect.innerHTML = '<option value="" disabled selected>Select Product</option>' +
+          products.map(product => `<option value="${product.name}">${product.name}</option>`).join('');
+      });
       document.getElementById('addStockModal').classList.remove('hidden');
     }
 
@@ -491,7 +482,7 @@
     // Open Service Management Modal
     function openServiceManagementModal() {
       document.getElementById('serviceManagementModal').classList.remove('hidden');
-      updateServiceList();
+      fetchServices();
     }
 
     // Close Modals
@@ -500,94 +491,147 @@
     }
 
     // Add Product
-    document.getElementById('addProductForm').addEventListener('submit', (e) => {
+    document.getElementById('addProductForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const productName = e.target[0].value;
       const productType = e.target[1].value;
       const buyingPrice = parseFloat(e.target[2].value);
       const sellingPrice = parseFloat(e.target[3].value);
-      const markupProfit = (sellingPrice - buyingPrice) * 0.1;
-      products.push({ name: productName, type: productType, buyingPrice: buyingPrice, sellingPrice: sellingPrice, markupProfit: markupProfit });
-      alert('Product added successfully!');
-      e.target.reset();
-      closeModal('addProductModal');
-      updateProductList();
+
+      const response = await fetch(`${backendUrl}/products/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: productName,
+          type: productType,
+          buying_price: buyingPrice,
+          selling_price: sellingPrice
+        })
+      });
+
+      if (response.ok) {
+        alert('Product added successfully!');
+        e.target.reset();
+        closeModal('addProductModal');
+        fetchProducts();
+      } else {
+        alert('Failed to add product');
+      }
     });
 
     // Add Stock
-    document.getElementById('addStockForm').addEventListener('submit', (e) => {
+    document.getElementById('addStockForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const stockItem = document.getElementById('stockItemSelect').value;
+      const productName = document.getElementById('stockItemSelect').value;
       const quantity = parseFloat(e.target[1].value);
       const pricePerUnit = parseFloat(e.target[2].value);
-      const totalInvested = quantity * pricePerUnit;
 
-      const existingItem = stockItems.find(item => item.name === stockItem);
-      if (existingItem) {
-        existingItem.quantity += quantity;
-        existingItem.totalInvested += totalInvested;
+      const response = await fetch(`${backendUrl}/stock/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          product_name: productName,
+          quantity: quantity,
+          price_per_unit: pricePerUnit
+        })
+      });
+
+      if (response.ok) {
+        alert('Stock added successfully!');
+        e.target.reset();
+        closeModal('addStockModal');
+        fetchStock();
       } else {
-        stockItems.push({ name: stockItem, quantity: quantity, totalInvested: totalInvested });
+        alert('Failed to add stock');
       }
-
-      alert('Stock added successfully!');
-      e.target.reset();
-      closeModal('addStockModal');
-      updateStockTable();
     });
 
     // Add Service
-    document.getElementById('addServiceForm').addEventListener('submit', (e) => {
+    document.getElementById('addServiceForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const serviceName = e.target[0].value;
       const serviceDescription = e.target[1].value;
       const servicePrice = parseFloat(e.target[2].value);
 
-      services.push({ name: serviceName, description: serviceDescription, price: servicePrice });
-      alert('Service added successfully!');
-      e.target.reset();
-      closeModal('addServiceModal');
-      updateServiceList();
+      const response = await fetch(`${backendUrl}/services/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: serviceName,
+          description: serviceDescription,
+          price: servicePrice
+        })
+      });
+
+      if (response.ok) {
+        alert('Service added successfully!');
+        e.target.reset();
+        closeModal('addServiceModal');
+        fetchServices();
+      } else {
+        alert('Failed to add service');
+      }
     });
 
-    // Update Product List
-    function updateProductList() {
+    // Fetch Products
+    async function fetchProducts() {
+      const response = await fetch(`${backendUrl}/products/`);
+      const data = await response.json();
       const productList = document.getElementById('productList');
-      productList.innerHTML = products.map((product, index) => `
-        <div onclick="showProductDetails(${index})" class="p-2 bg-gray-200 dark:bg-gray-600 rounded dark:text-white cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-500">${product.name}</div>
+      productList.innerHTML = data.products.map(product => `
+        <div onclick="showProductDetails('${product.name}', '${product.type}', ${product.buying_price}, ${product.selling_price})" class="p-2 bg-gray-200 dark:bg-gray-600 rounded dark:text-white cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-500">${product.name}</div>
       `).join('');
+      return data.products;
     }
 
-    // Update Stock Table
-    function updateStockTable() {
+    // Fetch Stock
+    async function fetchStock() {
+      const response = await fetch(`${backendUrl}/stock/`);
+      const data = await response.json();
       const stockTableBody = document.getElementById('stockTableBody');
-      stockTableBody.innerHTML = stockItems.map(item => `
+      stockTableBody.innerHTML = data.stock.map(item => `
         <tr>
-          <td>${item.name}</td>
+          <td>${item.product_name}</td>
           <td>${item.quantity}</td>
-          <td>${item.totalInvested.toFixed(2)}</td>
+          <td>${item.price_per_unit * item.quantity}</td>
         </tr>
       `).join('');
     }
 
-    // Update Service List
-    function updateServiceList() {
+    // Fetch Services
+    async function fetchServices() {
+      const response = await fetch(`${backendUrl}/services/`);
+      const data = await response.json();
       const serviceList = document.getElementById('serviceList');
       const serviceTableBody = document.getElementById('serviceTableBody');
 
-      // Update the service list in the Products/Services card
-      serviceList.innerHTML = services.map((service, index) => `
+      serviceList.innerHTML = data.services.map(service => `
         <div class="p-2 bg-gray-200 dark:bg-gray-600 rounded dark:text-white">${service.name}</div>
       `).join('');
 
-      // Update the service table in the Manage Services modal
-      serviceTableBody.innerHTML = services.map(service => `
+      serviceTableBody.innerHTML = data.services.map(service => `
         <tr>
           <td>${service.name}</td>
           <td>${service.description}</td>
-          <td>${service.price.toFixed(2)}</td>
+          <td>${service.price}</td>
         </tr>
       `).join('');
+    }
+
+    // Show Product Details
+    function showProductDetails(name, type, buyingPrice, sellingPrice) {
+      document.getElementById('productDetailsTitle').textContent = name;
+      document.getElementById('productType').textContent = type;
+      document.getElementById('buyingPrice').textContent = buyingPrice;
+      document.getElementById('sellingPrice').textContent = sellingPrice;
+      document.getElementById('markupProfit').textContent = (sellingPrice - buyingPrice).toFixed(2);
+      document.getElementById('productDetailsModal').classList.remove('hidden');
     }
 
     // Automatic Selling Price Calculation
@@ -599,52 +643,10 @@
       }
     });
 
-    // Show Product Details
-    function showProductDetails(index) {
-      const product = products[index];
-      document.getElementById('productDetailsTitle').textContent = product.name;
-      document.getElementById('productType').textContent = product.type;
-      document.getElementById('buyingPrice').textContent = product.buyingPrice.toFixed(2);
-      document.getElementById('sellingPrice').textContent = product.sellingPrice.toFixed(2);
-      document.getElementById('markupProfit').textContent = product.markupProfit.toFixed(2);
-      document.getElementById('productDetailsModal').classList.remove('hidden');
-    }
-
-    // Update Overview
-    function updateOverview() {
-      document.getElementById('totalSales').textContent = totalSales.toFixed(2);
-      document.getElementById('grossProfit').textContent = grossProfit.toFixed(2);
-      document.getElementById('totalExpenses').textContent = totalExpenses.toFixed(2);
-      document.getElementById('debtorsBalance').textContent = debtorsBalance.toFixed(2);
-      document.getElementById('netProfit').textContent = netProfit.toFixed(2);
-      document.getElementById('stockBalance').textContent = stockBalance.toFixed(2);
-      const transactionsList = document.getElementById('recentTransactions');
-      transactionsList.innerHTML = recentTransactions.map(t => `<li class="p-2 bg-gray-100 dark:bg-gray-700 rounded dark:text-white">${t}</li>`).join('');
-    }
-
-    // Bar Graph for Sales Analysis
-    const salesBarCtx = document.getElementById('salesBarChart').getContext('2d');
-    const salesBarChart = new Chart(salesBarCtx, {
-      type: 'bar',
-      data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-        datasets: [{
-          label: 'Sales ($)',
-          data: [1200, 1900, 3000, 2500, 2000, 2800],
-          backgroundColor: 'rgba(59, 130, 246, 0.6)',
-          borderColor: 'rgba(59, 130, 246, 1)',
-          borderWidth: 1,
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            beginAtZero: true
-          }
-        }
-      }
-    });
+    // Initialize
+    fetchProducts();
+    fetchStock();
+    fetchServices();
   </script>
 </body>
 </html>
