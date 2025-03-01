@@ -411,7 +411,8 @@
           <option value="" disabled selected>Select Product</option>
           <!-- Product options will be dynamically added here -->
         </select>
-        <input type="text" id="productTypeInput" placeholder="Product Type" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+        <input type="text" id="productTypeInput" placeholder="Product Type" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required readonly>
+        <input type="number" id="defaultUnitPriceInput" placeholder="Default Unit Price" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required readonly>
         <input type="number" placeholder="Quantity" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
         <input type="number" placeholder="Price per Unit" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
         <button type="submit" class="gray-button">Add Quantity</button>
@@ -470,6 +471,7 @@
             <th>Service Name</th>
             <th>Description</th>
             <th>Price</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody id="serviceTableBody">
@@ -526,10 +528,19 @@
       fetchProducts().then(products => {
         const stockItemSelect = document.getElementById('stockItemSelect');
         stockItemSelect.innerHTML = '<option value="" disabled selected>Select Product</option>' +
-          products.map(product => `<option value="${product.name}">${product.name}</option>`).join('');
+          products.map(product => `<option value="${product.name}" data-type="${product.type}" data-buying-price="${product.buying_price}">${product.name}</option>`).join('');
       });
       document.getElementById('addStockModal').classList.remove('hidden');
     }
+
+    // Populate Product Type and Default Unit Price when Product is selected
+    document.getElementById('stockItemSelect').addEventListener('change', (e) => {
+      const selectedProduct = e.target.options[e.target.selectedIndex];
+      const productType = selectedProduct.getAttribute('data-type');
+      const buyingPrice = selectedProduct.getAttribute('data-buying-price');
+      document.getElementById('productTypeInput').value = productType || '';
+      document.getElementById('defaultUnitPriceInput').value = buyingPrice || '';
+    });
 
     // Open Add Service Modal
     function openAddServiceModal() {
@@ -685,7 +696,14 @@
       const serviceTableBody = document.getElementById('serviceTableBody');
 
       serviceList.innerHTML = data.services.map(service => `
-        <div class="p-2 bg-gray-200 dark:bg-gray-600 rounded dark:text-white">${service.name}</div>
+        <div class="p-2 bg-gray-200 dark:bg-gray-600 rounded dark:text-white">
+          <span>${service.name}</span>
+          <div class="actions">
+            <i class="fas fa-trash text-red-500" onclick="deleteService('${service.name}')"></i>
+            <i class="fas fa-edit text-blue-500" onclick="editService('${service.name}', '${service.description}', ${service.price})"></i>
+            <i class="fas fa-eye text-green-500" onclick="viewService('${service.name}', '${service.description}', ${service.price})"></i>
+          </div>
+        </div>
       `).join('');
 
       serviceTableBody.innerHTML = data.services.map(service => `
@@ -693,6 +711,11 @@
           <td>${service.name}</td>
           <td>${service.description}</td>
           <td>${service.price}</td>
+          <td class="actions">
+            <i class="fas fa-trash text-red-500 hover:text-red-700 cursor-pointer" onclick="deleteService('${service.name}')"></i>
+            <i class="fas fa-edit text-blue-500 hover:text-blue-700 cursor-pointer ml-2" onclick="editService('${service.name}', '${service.description}', ${service.price})"></i>
+            <i class="fas fa-eye text-green-500 hover:text-green-700 cursor-pointer ml-2" onclick="viewService('${service.name}', '${service.description}', ${service.price})"></i>
+          </td>
         </tr>
       `).join('');
     }
@@ -725,6 +748,22 @@
           fetchStock(); // Refresh the stock table
         } else {
           alert('Failed to delete stock item');
+        }
+      }
+    }
+
+    // Delete Service
+    async function deleteService(serviceName) {
+      if (confirm(`Are you sure you want to delete ${serviceName}?`)) {
+        const response = await fetch(`${backendUrl}/services/${serviceName}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          alert('Service deleted successfully!');
+          fetchServices(); // Refresh the services list
+        } else {
+          alert('Failed to delete service');
         }
       }
     }
@@ -776,6 +815,7 @@
       const stockItemSelect = document.getElementById('stockItemSelect');
       stockItemSelect.value = productName;
       document.getElementById('productTypeInput').value = productType;
+      document.getElementById('defaultUnitPriceInput').value = pricePerUnit;
       document.getElementById('addStockForm').querySelector('input[type="number"]').value = quantity;
       document.getElementById('addStockForm').querySelectorAll('input[type="number"]')[1].value = pricePerUnit;
 
@@ -806,6 +846,43 @@
       };
     }
 
+    // Edit Service
+    function editService(name, description, price) {
+      document.getElementById('addServiceModal').classList.remove('hidden');
+      const form = document.getElementById('addServiceForm');
+      form[0].value = name;
+      form[1].value = description;
+      form[2].value = price;
+
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+        const serviceName = e.target[0].value;
+        const serviceDescription = e.target[1].value;
+        const servicePrice = parseFloat(e.target[2].value);
+
+        const response = await fetch(`${backendUrl}/services/${name}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: serviceName,
+            description: serviceDescription,
+            price: servicePrice
+          })
+        });
+
+        if (response.ok) {
+          alert('Service updated successfully!');
+          e.target.reset();
+          closeModal('addServiceModal');
+          fetchServices();
+        } else {
+          alert('Failed to update service');
+        }
+      };
+    }
+
     // View Stock Item Details
     function viewStockItem(productName, productType, quantity, pricePerUnit) {
       alert(`
@@ -814,6 +891,15 @@
         Quantity: ${quantity}
         Price Per Unit: UGX ${pricePerUnit.toLocaleString()}
         Total Invested: UGX ${(quantity * pricePerUnit).toLocaleString()}
+      `);
+    }
+
+    // View Service Details
+    function viewService(name, description, price) {
+      alert(`
+        Service Name: ${name}
+        Description: ${description}
+        Price: UGX ${price.toLocaleString()}
       `);
     }
 
