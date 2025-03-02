@@ -385,7 +385,6 @@
         <thead>
           <tr>
             <th>Product Name</th>
-            <th>Product Type</th>
             <th>Available Quantity</th>
             <th>Total Invested</th>
             <th>Actions</th>
@@ -411,7 +410,6 @@
           <option value="" disabled selected>Select Product</option>
           <!-- Product options will be dynamically added here -->
         </select>
-        <input type="text" id="productTypeInput" placeholder="Product Type" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required readonly>
         <input type="number" id="defaultUnitPriceInput" placeholder="Default Unit Price" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required readonly>
         <input type="number" placeholder="Quantity" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
         <input type="number" placeholder="Price per Unit" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
@@ -528,17 +526,15 @@
       fetchProducts().then(products => {
         const stockItemSelect = document.getElementById('stockItemSelect');
         stockItemSelect.innerHTML = '<option value="" disabled selected>Select Product</option>' +
-          products.map(product => `<option value="${product.name}" data-type="${product.type}" data-buying-price="${product.buying_price}">${product.name}</option>`).join('');
+          products.map(product => `<option value="${product.name}" data-buying-price="${product.buying_price}">${product.name} (${product.type})</option>`).join('');
       });
       document.getElementById('addStockModal').classList.remove('hidden');
     }
 
-    // Populate Product Type and Default Unit Price when Product is selected
+    // Populate Default Unit Price when Product is selected
     document.getElementById('stockItemSelect').addEventListener('change', (e) => {
       const selectedProduct = e.target.options[e.target.selectedIndex];
-      const productType = selectedProduct.getAttribute('data-type');
       const buyingPrice = selectedProduct.getAttribute('data-buying-price');
-      document.getElementById('productTypeInput').value = productType || '';
       document.getElementById('defaultUnitPriceInput').value = buyingPrice || '';
     });
 
@@ -593,7 +589,6 @@
     document.getElementById('addStockForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const productName = document.getElementById('stockItemSelect').value;
-      const productType = document.getElementById('productTypeInput').value;
       const quantity = parseFloat(e.target[2].value);
       const pricePerUnit = parseFloat(e.target[3].value);
 
@@ -604,7 +599,6 @@
         },
         body: JSON.stringify({
           product_name: productName,
-          product_type: productType,
           quantity: quantity,
           price_per_unit: pricePerUnit
         })
@@ -656,8 +650,7 @@
       const productList = document.getElementById('productList');
       productList.innerHTML = data.products.map(product => `
         <div class="product-item">
-          <span>${product.name}</span>
-          <span class="product-type">${product.type}</span>
+          <span>${product.name} (${product.type})</span>
           <div class="actions">
             <i class="fas fa-trash text-red-500" onclick="deleteProduct('${product.name}', '${product.type}')"></i>
             <i class="fas fa-edit text-blue-500" onclick="editProduct('${product.name}', '${product.type}', ${product.buying_price}, ${product.selling_price})"></i>
@@ -676,7 +669,6 @@
       stockTableBody.innerHTML = data.stock.map(item => `
         <tr>
           <td>${item.product_name}</td>
-          <td>${item.product_type || 'N/A'}</td>
           <td>${item.quantity}</td>
           <td>UGX ${(item.price_per_unit * item.quantity).toLocaleString()}</td>
           <td class="actions">
@@ -814,7 +806,6 @@
 
       const stockItemSelect = document.getElementById('stockItemSelect');
       stockItemSelect.value = productName;
-      document.getElementById('productTypeInput').value = productType;
       document.getElementById('defaultUnitPriceInput').value = pricePerUnit;
       document.getElementById('addStockForm').querySelector('input[type="number"]').value = quantity;
       document.getElementById('addStockForm').querySelectorAll('input[type="number"]')[1].value = pricePerUnit;
