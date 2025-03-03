@@ -523,13 +523,13 @@
 
     // Open Add Stock Modal
     function openAddStockModal() {
-      fetchProducts().then(products => {
+    fetchProducts().then(products => {
         const stockItemSelect = document.getElementById('stockItemSelect');
         stockItemSelect.innerHTML = '<option value="" disabled selected>Select Product</option>' +
-          products.map(product => `<option value="${product.name}" data-buying-price="${product.buying_price}">${product.name} (${product.type})</option>`).join('');
-      });
-      document.getElementById('addStockModal').classList.remove('hidden');
-    }
+            products.map(product => `<option value="${product.name}" data-buying-price="${product.buying_price}" data-product-type="${product.type}">${product.name} (${product.type})</option>`).join('');
+    });
+    document.getElementById('addStockModal').classList.remove('hidden');
+}
 
     // Populate Default Unit Price when Product is selected
     document.getElementById('stockItemSelect').addEventListener('change', (e) => {
@@ -586,33 +586,36 @@
     });
 
     // Add Stock
-    document.getElementById('addStockForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const productName = document.getElementById('stockItemSelect').value;
-      const quantity = parseFloat(e.target[2].value);
-      const pricePerUnit = parseFloat(e.target[3].value);
+document.getElementById('addStockForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const productName = document.getElementById('stockItemSelect').value;
+    const selectedProduct = document.getElementById('stockItemSelect').options[document.getElementById('stockItemSelect').selectedIndex];
+    const productType = selectedProduct.getAttribute('data-product-type'); // Assuming you add this attribute
+    const quantity = parseFloat(e.target[2].value);
+    const pricePerUnit = parseFloat(e.target[3].value);
 
-      const response = await fetch(`${backendUrl}/stock/`, {
+    const response = await fetch(`${backendUrl}/stock/`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+            'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          product_name: productName,
-          quantity: quantity,
-          price_per_unit: pricePerUnit
+            product_name: productName,
+            product_type: productType, // Include product_type
+            quantity: quantity,
+            price_per_unit: pricePerUnit
         })
-      });
+    });
 
-      if (response.ok) {
+    if (response.ok) {
         alert('Stock added successfully!');
         e.target.reset();
         closeModal('addStockModal');
         fetchStock();
-      } else {
+    } else {
         alert('Failed to add stock');
-      }
-    });
+    }
+});
 
     // Add Service
     document.getElementById('addServiceForm').addEventListener('submit', async (e) => {
