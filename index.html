@@ -255,6 +255,8 @@
         <div class="finance-item">
           <h3 class="text-lg font-semibold dark:text-white"><i class="fas fa-wallet mr-2"></i>Bank Account</h3>
           <div class="amount-box dark:text-white">UGX 1,000,000</div>
+          <button onclick="openDepositModal()" class="gray-button">Deposit</button>
+          <button onclick="openWithdrawModal()" class="gray-button">Withdraw</button>
         </div>
         <div class="finance-item">
           <h3 class="text-lg font-semibold dark:text-white"><i class="fas fa-chart-line mr-2"></i>Total Investment</h3>
@@ -479,7 +481,31 @@
       <button onclick="closeModal('serviceManagementModal')" class="close-button mt-2">Close</button>
     </div>
   </div>
+<!-- Deposit Modal -->
+  <div id="depositModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-plus mr-2"></i>Deposit</h3>
+      <form id="depositForm">
+        <input type="number" placeholder="Amount" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+        <input type="text" placeholder="Purpose" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+        <button type="submit" class="gray-button">Deposit</button>
+      </form>
+      <button onclick="closeModal('depositModal')" class="close-button mt-2">Close</button>
+    </div>
+  </div>
 
+  <!-- Withdraw Modal -->
+  <div id="withdrawModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-minus mr-2"></i>Withdraw</h3>
+      <form id="withdrawForm">
+        <input type="number" placeholder="Amount" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+        <input type="text" placeholder="Purpose" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+        <button type="submit" class="gray-button">Withdraw</button>
+      </form>
+      <button onclick="closeModal('withdrawModal')" class="close-button mt-2">Close</button>
+    </div>
+  </div>
   <!-- JavaScript -->
   <script>
     const backendUrl = 'https://man-m681.onrender.com'; // Replace with your Render backend URL
@@ -499,6 +525,72 @@
         themeIcon.classList.add('fa-moon');
       }
     });
+    // Open Deposit Modal
+    function openDepositModal() {
+      document.getElementById('depositModal').classList.remove('hidden');
+    }
+
+    // Open Withdraw Modal
+    function openWithdrawModal() {
+      document.getElementById('withdrawModal').classList.remove('hidden');
+    }
+    // Deposit Form Submission
+    document.getElementById('depositForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const amount = parseFloat(e.target[0].value);
+      const purpose = e.target[1].value;
+
+      const response = await fetch(`${backendUrl}/bank_account/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          balance: amount,
+          purpose: purpose
+        })
+      });
+
+      if (response.ok) {
+        alert('Deposit successful!');
+        e.target.reset();
+        closeModal('depositModal');
+        fetchBankAccountBalance();
+      } else {
+        alert('Failed to deposit');
+      }
+    });
+
+    // Withdraw Form Submission
+    document.getElementById('withdrawForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const amount = parseFloat(e.target[0].value);
+      const purpose = e.target[1].value;
+
+      const response = await fetch(`${backendUrl}/bank_account/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          balance: -amount,
+          purpose: purpose
+        })
+      });
+
+      if (response.ok) {
+        alert('Withdrawal successful!');
+        e.target.reset();
+        closeModal('withdrawModal');
+        fetchBankAccountBalance();
+      } else {
+        alert('Failed to withdraw');
+      }
+    });
+
+    // Initialize
+    fetchBankAccountBalance();
+
 
     // Fetch and display bank account balance
     async function fetchBankAccountBalance() {
