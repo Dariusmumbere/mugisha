@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login & Sign Up | NDYAKURUNGI ITECH</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="module">
+    // Firebase Configuration
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBBGs3qW5xQYUdmkyWPoVrPq-j9e-ecnPU",
+      authDomain: "mugisha-cd412.firebaseapp.com",
+      projectId: "mugisha-cd412",
+      storageBucket: "mugisha-cd412.appspot.com",
+      messagingSenderId: "193782050555",
+      appId: "1:193782050555:web:60b98b4bb933ce6e9dca5e",
+      measurementId: "G-HPFZ5QTTBT"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // DOM Elements
+    const loginForm = document.getElementById('login');
+    const signUpForm = document.getElementById('signup');
+    const loginFormContainer = document.getElementById('loginForm');
+    const signUpFormContainer = document.getElementById('signUpForm');
+    const showSignUp = document.getElementById('showSignUp');
+    const showLogin = document.getElementById('showLogin');
+    const messageDiv = document.getElementById('message');
+
+    // Toggle between Login and Sign Up forms
+    showSignUp.addEventListener('click', (e) => {
+      e.preventDefault();
+      loginFormContainer.classList.add('hidden');
+      signUpFormContainer.classList.remove('hidden');
+    });
+
+    showLogin.addEventListener('click', (e) => {
+      e.preventDefault();
+      signUpFormContainer.classList.add('hidden');
+      loginFormContainer.classList.remove('hidden');
+    });
+
+    // Handle Login
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          showMessage('Login successful! Redirecting...', 'green');
+          setTimeout(() => {
+            window.location.href = '/dashboard.html'; // Redirect to dashboard
+          }, 1500);
+        })
+        .catch((error) => {
+          showMessage(error.message, 'red');
+        });
+    });
+
+    // Handle Sign Up
+    signUpForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('signupEmail').value;
+      const password = document.getElementById('signupPassword').value;
+
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          showMessage('Sign up successful! Redirecting...', 'green');
+          setTimeout(() => {
+            window.location.href = '/dashboard.html'; // Redirect to dashboard
+          }, 1500);
+        })
+        .catch((error) => {
+          showMessage(error.message, 'red');
+        });
+    });
+
+    // Show success/error messages
+    function showMessage(message, color) {
+      messageDiv.textContent = message;
+      messageDiv.classList.remove('hidden');
+      messageDiv.style.backgroundColor = color === 'green' ? '#d1fae5' : '#fee2e2';
+      messageDiv.style.color = color === 'green' ? '#065f46' : '#991b1b';
+
+      setTimeout(() => {
+        messageDiv.classList.add('hidden');
+      }, 3000);
+    }
+  </script>
+  <style>
+    .gradient-bg {
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+    }
+    .form-container {
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+  <!-- Login Form -->
+  <div id="loginForm" class="form-container bg-white/90 p-8 rounded-lg shadow-lg w-full max-w-md">
+    <div class="flex items-center justify-center mb-6">
+      <img src="Itech-computers-logo1.webp" alt="Company Logo" class="w-12 h-12 mr-2">
+      <h1 class="text-3xl font-bold text-gray-800">NDYAKURUNGI ITECH</h1>
+    </div>
+    <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Login</h2>
+    <form id="login">
+      <div class="mb-4">
+        <label for="loginEmail" class="block text-sm font-medium text-gray-700">Email</label>
+        <input type="email" id="loginEmail" class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" required>
+      </div>
+      <div class="mb-6">
+        <label for="loginPassword" class="block text-sm font-medium text-gray-700">Password</label>
+        <input type="password" id="loginPassword" class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" required>
+      </div>
+      <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition duration-300">Login</button>
+    </form>
+    <p class="mt-4 text-center text-sm text-gray-600">
+      Don't have an account? <a href="#" id="showSignUp" class="text-blue-600 hover:underline">Sign Up</a>
+    </p>
+  </div>
+
+  <!-- Sign Up Form -->
+  <div id="signUpForm" class="form-container bg-white/90 p-8 rounded-lg shadow-lg w-full max-w-md hidden">
+    <div class="flex items-center justify-center mb-6">
+      <img src="Itech-computers-logo1.webp" alt="Company Logo" class="w-12 h-12 mr-2">
+      <h1 class="text-3xl font-bold text-gray-800">NDYAKURUNGI ITECH</h1>
+    </div>
+    <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Sign Up</h2>
+    <form id="signup">
+      <div class="mb-4">
+        <label for="signupEmail" class="block text-sm font-medium text-gray-700">Email</label>
+        <input type="email" id="signupEmail" class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" required>
+      </div>
+      <div class="mb-6">
+        <label for="signupPassword" class="block text-sm font-medium text-gray-700">Password</label>
+        <input type="password" id="signupPassword" class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" required>
+      </div>
+      <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition duration-300">Sign Up</button>
+    </form>
+    <p class="mt-4 text-center text-sm text-gray-600">
+      Already have an account? <a href="#" id="showLogin" class="text-blue-600 hover:underline">Login</a>
+    </p>
+  </div>
+
+  <!-- Success/Error Message -->
+  <div id="message" class="fixed top-4 right-4 bg-white p-4 rounded-lg shadow-lg hidden"></div>
+</body>
+</html>
