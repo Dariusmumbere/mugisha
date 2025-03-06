@@ -1039,6 +1039,17 @@ async function fetchStock() {
         document.getElementById('sellingPriceInput').value = sellingPrice.toFixed(2);
       }
     });
+    // On page load, fetch the total investment from the backend
+document.addEventListener('DOMContentLoaded', async () => {
+  const response = await fetch(`${backendUrl}/total_investment/`);
+  const data = await response.json();
+  const totalInvestment = data.total_investment || 0;
+
+  const totalInvestmentElement = document.querySelector('.finance-item:nth-child(2) .amount-box');
+  if (totalInvestmentElement) {
+    totalInvestmentElement.textContent = `UGX ${totalInvestment.toLocaleString()}`;
+  }
+});
 
     // Initialize
     fetchProducts();
