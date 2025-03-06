@@ -730,7 +730,7 @@ async function updateTotalInvested() {
         totalInvested += item.quantity * item.price_per_unit;
     });
 
-    document.querySelector('.finance-item:nth-child(2) .amount-box').textContent = `UGX ${totalInvested.toLocaleString()}`;
+    document.querySelector('.finance-item:nth-child(3) .amount-box').textContent = `UGX ${totalInvested.toLocaleString()}`;
 }
 
 
