@@ -1051,6 +1051,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     totalInvestmentElement.textContent = `UGX ${totalInvestment.toLocaleString()}`;
   }
 });
+    document.addEventListener('DOMContentLoaded', () => {
+    fetchBankAccountBalance();
+    fetchTotalInvestment();
+    fetchTotalStock(); // Add this line
+});
+    // Function to fetch and display the total amount in stock
+async function fetchTotalStock() {
+    const response = await fetch(`${backendUrl}/total_stock/`);
+    const data = await response.json();
+    const totalStock = data.total_stock || 0;
+
+    const totalStockElement = document.querySelector('.finance-item:nth-child(3) .amount-box');
+    if (totalStockElement) {
+        totalStockElement.textContent = `UGX ${totalStock.toLocaleString()}`;
+    }
+}
+
+// Initialize
+fetchTotalStock();
     // Function to update the total invested amount in the finance card
 async function updateTotalInvested() {
   const response = await fetch(`${backendUrl}/total_investment/`);
@@ -1068,6 +1087,7 @@ async function updateTotalInvested() {
     fetchServices();
     fetchTotalInvestment();
     updateTotalInvested();
+    
   </script>
 </body>
 </html>
