@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Assets Management</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 p-8">
   <header class="bg-white dark:bg-gray-800 shadow">
@@ -55,6 +56,7 @@
             <th class="p-3 text-left">Cost Price (UGX)</th>
             <th class="p-3 text-left">Current Value (UGX)</th>
             <th class="p-3 text-left">Quantity</th>
+            <th class="p-3 text-left">Total Value (UGX)</th>
             <th class="p-3 text-left">Actions</th>
           </tr>
         </thead>
@@ -137,25 +139,26 @@
 
   <!-- JavaScript -->
   <script>
-    // Sample Data
-    let assets = [
-      { id: 1, name: "Office Laptop", type: "Electronics", costPrice: 1200, currentValue: 900, quantity: 5 },
-
-    ];
+    const backendUrl = 'https://man-m681.onrender.com'; // Replace with your Render backend URL
 
     // Function to render table rows
-    function renderTable(data) {
+    async function renderTable() {
+      const response = await fetch(`${backendUrl}/assets/`);
+      const data = await response.json();
+      const assets = data.assets;
+
       const tableBody = document.getElementById("assetsTable");
-      tableBody.innerHTML = data
+      tableBody.innerHTML = assets
         .map(
-          (asset) => `
+          (asset, index) => `
           <tr class="hover:bg-gray-50">
-            <td class="p-3">${asset.id}</td>
+            <td class="p-3">${index + 1}</td>
             <td class="p-3">${asset.name}</td>
             <td class="p-3">${asset.type}</td>
-            <td class="p-3">${asset.costPrice}</td>
-            <td class="p-3">${asset.currentValue}</td>
+            <td class="p-3">${asset.cost_price.toLocaleString()}</td>
+            <td class="p-3">${asset.current_value.toLocaleString()}</td>
             <td class="p-3">${asset.quantity}</td>
+            <td class="p-3">${(asset.cost_price * asset.quantity).toLocaleString()}</td>
             <td class="p-3">
               <button class="text-blue-500 hover:text-blue-700 mr-2" onclick="viewAsset(${asset.id})">👁️ View</button>
               <button class="text-green-500 hover:text-green-700 mr-2" onclick="infoAsset(${asset.id})">ℹ️ Info</button>
@@ -168,9 +171,11 @@
     }
 
     // Function to handle search
-    document.getElementById("search").addEventListener("input", (e) => {
+    document.getElementById("search").addEventListener("input", async (e) => {
       const searchTerm = e.target.value.toLowerCase();
-      const filteredAssets = assets.filter(
+      const response = await fetch(`${backendUrl}/assets/`);
+      const data = await response.json();
+      const filteredAssets = data.assets.filter(
         (asset) =>
           asset.name.toLowerCase().includes(searchTerm) ||
           asset.type.toLowerCase().includes(searchTerm)
@@ -187,10 +192,19 @@
       alert(`More Info for Asset ID: ${id}`);
     }
 
-    function deleteAsset(id) {
+    async function deleteAsset(id) {
       if (confirm("Are you sure you want to delete this asset?")) {
-        assets = assets.filter((asset) => asset.id !== id);
-        renderTable(assets);
+        const response = await fetch(`${backendUrl}/assets/${id}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          alert('Asset deleted successfully!');
+          renderTable();
+          updateTotalInvestment();
+        } else {
+          alert('Failed to delete asset');
+        }
       }
     }
 
@@ -203,66 +217,51 @@
       document.getElementById("addAssetModal").classList.add("hidden");
     }
 
+    // Add Asset Form Submission
     document.getElementById("addAssetForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const newAsset = {
+      e.preventDefault();
+      const newAsset = {
         name: document.getElementById("assetName").value,
         type: document.getElementById("assetType").value,
-        costPrice: parseFloat(document.getElementById("assetCostPrice").value),
-        currentValue: parseFloat(document.getElementById("assetCurrentValue").value),
+        cost_price: parseFloat(document.getElementById("assetCostPrice").value),
+        current_value: parseFloat(document.getElementById("assetCurrentValue").value),
         quantity: parseInt(document.getElementById("assetQuantity").value),
-    };
+      };
 
-    const response = await fetch(`${backendUrl}/assets/`, {
+      const response = await fetch(`${backendUrl}/assets/`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newAsset)
-    });
+        body: JSON.stringify(newAsset),
+      });
 
-    if (response.ok) {
+      if (response.ok) {
         alert('Asset added successfully!');
         closeAddAssetModal();
-        fetchAssets();
+        renderTable();
         updateTotalInvestment();
-    } else {
+      } else {
         alert('Failed to add asset');
+      }
+    });
+
+    // Function to update total investment in the finance card
+    async function updateTotalInvestment() {
+      const response = await fetch(`${backendUrl}/total_investment/`);
+      const data = await response.json();
+      const totalInvestment = data.total_investment || 0;
+
+      // Update the finance card
+      const totalInvestmentElement = document.querySelector('.finance-item:nth-child(2) .amount-box');
+      if (totalInvestmentElement) {
+        totalInvestmentElement.textContent = `UGX ${totalInvestment.toLocaleString()}`;
+      }
     }
-});
-    async function fetchAssets() {
-    const response = await fetch(`${backendUrl}/assets/`);
-    const data = await response.json();
-    const assetsTable = document.getElementById("assetsTable");
-    assetsTable.innerHTML = data.assets.map(asset => `
-        <tr class="hover:bg-gray-50">
-            <td class="p-3">${asset.id}</td>
-            <td class="p-3">${asset.name}</td>
-            <td class="p-3">${asset.type}</td>
-            <td class="p-3">${asset.cost_price}</td>
-            <td class="p-3">${asset.current_value}</td>
-            <td class="p-3">${asset.quantity}</td>
-            <td class="p-3">
-                <button class="text-blue-500 hover:text-blue-700 mr-2" onclick="viewAsset(${asset.id})">👁️ View</button>
-                <button class="text-green-500 hover:text-green-700 mr-2" onclick="infoAsset(${asset.id})">ℹ️ Info</button>
-                <button class="text-red-500 hover:text-red-700" onclick="deleteAsset(${asset.id})">🗑️ Delete</button>
-            </td>
-        </tr>
-    `).join("");
-}
-
-async function updateTotalInvestment() {
-    const response = await fetch(`${backendUrl}/total_investment/`);
-    const data = await response.json();
-    document.querySelector('.finance-item:nth-child(2) .amount-box').textContent = `UGX ${data.total_investment.toLocaleString()}`;
-}
-
-// Initial Render
-fetchAssets();
-updateTotalInvestment();
 
     // Initial Render
-    renderTable(assets);
+    renderTable();
+    updateTotalInvestment();
   </script>
 </body>
 </html>
