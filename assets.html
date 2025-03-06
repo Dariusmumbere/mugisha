@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assets Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="max-w-6xl mx-auto">
+    <!-- Page Title -->
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Assets Management</h1>
+
+    <!-- Search Bar -->
+    <div class="mb-6">
+      <input
+        type="text"
+        id="search"
+        placeholder="Search assets..."
+        class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white shadow-md rounded-lg overflow-x-auto">
+      <table class="min-w-full">
+        <!-- Table Header -->
+        <thead class="bg-blue-600 text-white">
+          <tr>
+            <th class="p-3 text-left">S/N</th>
+            <th class="p-3 text-left">Name of Asset</th>
+            <th class="p-3 text-left">Type</th>
+            <th class="p-3 text-left">Cost Price ($)</th>
+            <th class="p-3 text-left">Current Value ($)</th>
+            <th class="p-3 text-left">Actions</th>
+          </tr>
+        </thead>
+        <!-- Table Body -->
+        <tbody id="assetsTable" class="divide-y divide-gray-200">
+          <!-- Rows will be populated dynamically using JavaScript -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    // Sample Data
+    const assets = [
+      { id: 1, name: "Office Laptop", type: "Electronics", costPrice: 1200, currentValue: 900 },
+      { id: 2, name: "Company Car", type: "Vehicle", costPrice: 25000, currentValue: 18000 },
+      { id: 3, name: "Office Printer", type: "Electronics", costPrice: 500, currentValue: 300 },
+      { id: 4, name: "Industrial Machine", type: "Machinery", costPrice: 50000, currentValue: 45000 },
+      { id: 5, name: "Office Furniture", type: "Furniture", costPrice: 3000, currentValue: 2500 },
+    ];
+
+    // Function to render table rows
+    function renderTable(data) {
+      const tableBody = document.getElementById("assetsTable");
+      tableBody.innerHTML = data
+        .map(
+          (asset) => `
+          <tr class="hover:bg-gray-50">
+            <td class="p-3">${asset.id}</td>
+            <td class="p-3">${asset.name}</td>
+            <td class="p-3">${asset.type}</td>
+            <td class="p-3">${asset.costPrice}</td>
+            <td class="p-3">${asset.currentValue}</td>
+            <td class="p-3">
+              <button class="text-blue-500 hover:text-blue-700 mr-2" onclick="viewAsset(${asset.id})">👁️ View</button>
+              <button class="text-green-500 hover:text-green-700 mr-2" onclick="infoAsset(${asset.id})">ℹ️ Info</button>
+              <button class="text-red-500 hover:text-red-700" onclick="deleteAsset(${asset.id})">🗑️ Delete</button>
+            </td>
+          </tr>
+        `
+        )
+        .join("");
+    }
+
+    // Function to handle search
+    document.getElementById("search").addEventListener("input", (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      const filteredAssets = assets.filter(
+        (asset) =>
+          asset.name.toLowerCase().includes(searchTerm) ||
+          asset.type.toLowerCase().includes(searchTerm)
+      );
+      renderTable(filteredAssets);
+    });
+
+    // Action Functions
+    function viewAsset(id) {
+      alert(`Viewing Asset ID: ${id}`);
+    }
+
+    function infoAsset(id) {
+      alert(`More Info for Asset ID: ${id}`);
+    }
+
+    function deleteAsset(id) {
+      if (confirm("Are you sure you want to delete this asset?")) {
+        const index = assets.findIndex((asset) => asset.id === id);
+        if (index !== -1) {
+          assets.splice(index, 1);
+          renderTable(assets);
+        }
+      }
+    }
+
+    // Initial Render
+    renderTable(assets);
+  </script>
+</body>
+</html>
