@@ -7,7 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 p-8">
-    <header class="bg-white dark:bg-gray-800 shadow">
+  <header class="bg-white dark:bg-gray-800 shadow">
     <div class="container mx-auto p-4 flex items-center justify-between">
       <div class="flex items-center">
         <div class="text-4xl text-blue-600 dark:text-blue-400 mr-4">
@@ -27,14 +27,20 @@
     <!-- Page Title -->
     <h1 class="text-3xl font-bold text-gray-800 mb-6">Assets Management</h1>
 
-    <!-- Search Bar -->
-    <div class="mb-6">
+    <!-- Add Asset Button -->
+    <div class="mb-6 flex justify-between items-center">
       <input
         type="text"
         id="search"
         placeholder="Search assets..."
-        class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        class="w-1/2 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
+      <button
+        onclick="openAddAssetModal()"
+        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300"
+      >
+        + Add Asset
+      </button>
     </div>
 
     <!-- Table -->
@@ -48,6 +54,7 @@
             <th class="p-3 text-left">Type</th>
             <th class="p-3 text-left">Cost Price ($)</th>
             <th class="p-3 text-left">Current Value ($)</th>
+            <th class="p-3 text-left">Quantity</th>
             <th class="p-3 text-left">Actions</th>
           </tr>
         </thead>
@@ -59,15 +66,84 @@
     </div>
   </div>
 
+  <!-- Add Asset Modal -->
+  <div id="addAssetModal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center">
+    <div class="bg-white p-6 rounded-lg w-96">
+      <h2 class="text-xl font-bold mb-4">Add New Asset</h2>
+      <form id="addAssetForm">
+        <div class="mb-4">
+          <label class="block text-gray-700">Name of Asset</label>
+          <input
+            type="text"
+            id="assetName"
+            class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700">Type</label>
+          <input
+            type="text"
+            id="assetType"
+            class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700">Cost Price ($)</label>
+          <input
+            type="number"
+            id="assetCostPrice"
+            class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700">Current Value ($)</label>
+          <input
+            type="number"
+            id="assetCurrentValue"
+            class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700">Quantity</label>
+          <input
+            type="number"
+            id="assetQuantity"
+            class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+        <div class="flex justify-end">
+          <button
+            type="button"
+            onclick="closeAddAssetModal()"
+            class="bg-gray-500 text-white px-4 py-2 rounded-lg mr-2 hover:bg-gray-600 transition duration-300"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300"
+          >
+            Add Asset
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- JavaScript -->
   <script>
     // Sample Data
-    const assets = [
-      { id: 1, name: "Office Laptop", type: "Electronics", costPrice: 1200, currentValue: 900 },
-      { id: 2, name: "Company Car", type: "Vehicle", costPrice: 25000, currentValue: 18000 },
-      { id: 3, name: "Office Printer", type: "Electronics", costPrice: 500, currentValue: 300 },
-      { id: 4, name: "Industrial Machine", type: "Machinery", costPrice: 50000, currentValue: 45000 },
-      { id: 5, name: "Office Furniture", type: "Furniture", costPrice: 3000, currentValue: 2500 },
+    let assets = [
+      { id: 1, name: "Office Laptop", type: "Electronics", costPrice: 1200, currentValue: 900, quantity: 5 },
+      { id: 2, name: "Company Car", type: "Vehicle", costPrice: 25000, currentValue: 18000, quantity: 2 },
+      { id: 3, name: "Office Printer", type: "Electronics", costPrice: 500, currentValue: 300, quantity: 3 },
+      { id: 4, name: "Industrial Machine", type: "Machinery", costPrice: 50000, currentValue: 45000, quantity: 1 },
+      { id: 5, name: "Office Furniture", type: "Furniture", costPrice: 3000, currentValue: 2500, quantity: 10 },
     ];
 
     // Function to render table rows
@@ -82,6 +158,7 @@
             <td class="p-3">${asset.type}</td>
             <td class="p-3">${asset.costPrice}</td>
             <td class="p-3">${asset.currentValue}</td>
+            <td class="p-3">${asset.quantity}</td>
             <td class="p-3">
               <button class="text-blue-500 hover:text-blue-700 mr-2" onclick="viewAsset(${asset.id})">👁️ View</button>
               <button class="text-green-500 hover:text-green-700 mr-2" onclick="infoAsset(${asset.id})">ℹ️ Info</button>
@@ -115,13 +192,36 @@
 
     function deleteAsset(id) {
       if (confirm("Are you sure you want to delete this asset?")) {
-        const index = assets.findIndex((asset) => asset.id === id);
-        if (index !== -1) {
-          assets.splice(index, 1);
-          renderTable(assets);
-        }
+        assets = assets.filter((asset) => asset.id !== id);
+        renderTable(assets);
       }
     }
+
+    // Add Asset Modal Functions
+    function openAddAssetModal() {
+      document.getElementById("addAssetModal").classList.remove("hidden");
+    }
+
+    function closeAddAssetModal() {
+      document.getElementById("addAssetModal").classList.add("hidden");
+    }
+
+    // Add Asset Form Submission
+    document.getElementById("addAssetForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const newAsset = {
+        id: assets.length + 1,
+        name: document.getElementById("assetName").value,
+        type: document.getElementById("assetType").value,
+        costPrice: parseFloat(document.getElementById("assetCostPrice").value),
+        currentValue: parseFloat(document.getElementById("assetCurrentValue").value),
+        quantity: parseInt(document.getElementById("assetQuantity").value),
+      };
+      assets.push(newAsset);
+      renderTable(assets);
+      closeAddAssetModal();
+      document.getElementById("addAssetForm").reset();
+    });
 
     // Initial Render
     renderTable(assets);
