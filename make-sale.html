@@ -250,6 +250,22 @@
     </div>
   </div>
 
+  <!-- Select Service Modal -->
+  <div id="selectServiceModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-cogs mr-2"></i>Select Service</h3>
+      <form id="selectServiceForm">
+        <select id="serviceSelect" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+          <option value="" disabled selected>Select Service</option>
+          <!-- Services will be dynamically added here -->
+        </select>
+        <input type="number" placeholder="Quantity" id="serviceQuantity" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+        <button type="submit" class="gray-button">Add Service</button>
+      </form>
+      <button onclick="closeModal('selectServiceModal')" class="close-button mt-2">Close</button>
+    </div>
+  </div>
+
   <!-- Sales History Modal -->
   <div id="salesHistoryModal" class="modal-overlay hidden">
     <div class="modal-content sales-history-modal">
@@ -271,21 +287,6 @@
       <button onclick="closeModal('salesHistoryModal')" class="close-button mt-2">Close</button>
     </div>
   </div>
-  <!-- Select Service Modal -->
-<div id="selectServiceModal" class="modal-overlay hidden">
-  <div class="modal-content">
-    <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-cogs mr-2"></i>Select Service</h3>
-    <form id="selectServiceForm">
-      <select id="serviceSelect" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
-        <option value="" disabled selected>Select Service</option>
-        <!-- Services will be dynamically added here -->
-      </select>
-      <input type="number" placeholder="Quantity" id="serviceQuantity" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
-      <button type="submit" class="gray-button">Add Service</button>
-    </form>
-    <button onclick="closeModal('selectServiceModal')" class="close-button mt-2">Close</button>
-  </div>
-</div>
 
   <!-- JavaScript -->
   <script>
@@ -316,18 +317,15 @@
     function populateItemSelect() {
       const itemSelect = document.getElementById('itemSelect');
       itemSelect.innerHTML = '<option value="" disabled selected>Select Item</option>' +
-        products.map(product => `<option value="${product.name}">${product.name}</option>`).join('');
+        products.map(product => `<option value="${product.name}" data-type="${product.type}">${product.name} (${product.type})</option>`).join('');
     }
 
     // Open Add Item Modal
     function openAddItemModal() {
-  fetchProducts().then(products => {
-    const itemSelect = document.getElementById('itemSelect');
-    itemSelect.innerHTML = '<option value="" disabled selected>Select Item</option>' +
-      products.map(product => `<option value="${product.name}" data-type="${product.type}">${product.name} (${product.type})</option>`).join('');
-  });
-  document.getElementById('addItemModal').classList.remove('hidden');
-}
+      fetchProducts();
+      document.getElementById('addItemModal').classList.remove('hidden');
+    }
+
     // Add Item to Sale
     document.getElementById('addItemForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -413,6 +411,7 @@
 
       if (response.ok) {
         alert('Client added successfully!');
+        e.target.reset();
         closeModal('addClientModal');
       } else {
         alert('Failed to add client.');
@@ -533,35 +532,44 @@
       salesHistory.splice(index, 1);
       updateSalesHistory();
     }
+
+    // Open Select Service Modal
     function openSelectServiceModal() {
-  fetchServices().then(services => {
-    const serviceSelect = document.getElementById('serviceSelect');
-    serviceSelect.innerHTML = '<option value="" disabled selected>Select Service</option>' +
-      services.map(service => `<option value="${service.name}">${service.name} - UGX ${service.price.toFixed(2)}</option>`).join('');
-  });
-  document.getElementById('selectServiceModal').classList.remove('hidden');
-}
+      fetchServices().then(services => {
+        const serviceSelect = document.getElementById('serviceSelect');
+        serviceSelect.innerHTML = '<option value="" disabled selected>Select Service</option>' +
+          services.map(service => `<option value="${service.name}">${service.name} - UGX ${service.price.toFixed(2)}</option>`).join('');
+      });
+      document.getElementById('selectServiceModal').classList.remove('hidden');
+    }
 
-document.getElementById('selectServiceForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const serviceName = document.getElementById('serviceSelect').value;
-  const quantity = parseFloat(document.getElementById('serviceQuantity').value);
+    // Add Service to Sale
+    document.getElementById('selectServiceForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const serviceName = document.getElementById('serviceSelect').value;
+      const quantity = parseFloat(document.getElementById('serviceQuantity').value);
 
-  const response = await fetch(`${backendUrl}/services/`);
-  const data = await response.json();
-  const service = data.services.find(s => s.name === serviceName);
+      const response = await fetch(`${backendUrl}/services/`);
+      const data = await response.json();
+      const service = data.services.find(s => s.name === serviceName);
 
-  if (!service) {
-    alert('Service not found!');
-    return;
-  }
+      if (!service) {
+        alert('Service not found!');
+        return;
+      }
 
-  const total = service.price * quantity;
-  currentSale.push({ itemName: serviceName, quantity, unitPrice: service.price, total });
-  updateSaleTable();
-  closeModal('selectServiceModal');
-});
-    
+      const total = service.price * quantity;
+      currentSale.push({ itemName: serviceName, quantity, unitPrice: service.price, total });
+      updateSaleTable();
+      closeModal('selectServiceModal');
+    });
+
+    // Fetch Services
+    async function fetchServices() {
+      const response = await fetch(`${backendUrl}/services/`);
+      const data = await response.json();
+      return data.services;
+    }
 
     // Initialize
     fetchProducts();
