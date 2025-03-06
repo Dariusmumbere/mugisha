@@ -250,7 +250,7 @@
     async function updateTotalInvestment() {
       const response = await fetch(`${backendUrl}/total_investment/`);
       const data = await response.json();
-      const totalInvestment = data.total_investment || 0;
+      const totalInvestment = data.total_investment;
 
       // Update the finance card
       const totalInvestmentElement = document.querySelector('.finance-item:nth-child(2) .amount-box');
