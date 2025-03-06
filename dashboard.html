@@ -244,6 +244,16 @@
       <span class="default-text">Make Payment</span>
       <span class="hover-text">Make Payment</span>
     </div>
+    <div class="action-item">
+      <i class="fas fa-money-check-alt"></i>
+      <span class="default-text">Daily Expenses</span>
+      <span class="hover-text">Daily Expenses</span>
+    </div>
+    <div class="action-item">
+      <i class="fas fa-money-check-alt"></i>
+      <span class="default-text">Assets</span>
+      <span class="hover-text">Assets</span>
+    </div>
   </div>
 
   <!-- Main Content -->
@@ -682,7 +692,7 @@ document.getElementById('addStockForm').addEventListener('submit', async (e) => 
     e.preventDefault();
     const productName = document.getElementById('stockItemSelect').value;
     const selectedProduct = document.getElementById('stockItemSelect').options[document.getElementById('stockItemSelect').selectedIndex];
-    const productType = selectedProduct.getAttribute('data-product-type'); // Assuming you add this attribute
+    const productType = selectedProduct.getAttribute('data-product-type');
     const quantity = parseFloat(e.target[2].value);
     const pricePerUnit = parseFloat(e.target[3].value);
 
@@ -693,7 +703,7 @@ document.getElementById('addStockForm').addEventListener('submit', async (e) => 
         },
         body: JSON.stringify({
             product_name: productName,
-            product_type: productType, // Include product_type
+            product_type: productType,
             quantity: quantity,
             price_per_unit: pricePerUnit
         })
@@ -704,10 +714,30 @@ document.getElementById('addStockForm').addEventListener('submit', async (e) => 
         e.target.reset();
         closeModal('addStockModal');
         fetchStock();
+        updateTotalInvested(); // Update the total invested amount in the finance card
     } else {
         alert('Failed to add stock');
     }
 });
+
+// Function to update the total invested amount in the finance card
+async function updateTotalInvested() {
+    const response = await fetch(`${backendUrl}/stock/`);
+    const data = await response.json();
+    let totalInvested = 0;
+
+    data.stock.forEach(item => {
+        totalInvested += item.quantity * item.price_per_unit;
+    });
+
+    document.querySelector('.finance-item:nth-child(2) .amount-box').textContent = `UGX ${totalInvested.toLocaleString()}`;
+}
+
+
+// Initialize
+fetchProducts();
+fetchStock();
+fetchServices();
 
     // Add Service
     document.getElementById('addServiceForm').addEventListener('submit', async (e) => {
@@ -757,23 +787,26 @@ document.getElementById('addStockForm').addEventListener('submit', async (e) => 
     }
 
     // Fetch Stock
-    async function fetchStock() {
-      const response = await fetch(`${backendUrl}/stock/`);
-      const data = await response.json();
-      const stockTableBody = document.getElementById('stockTableBody');
-      stockTableBody.innerHTML = data.stock.map(item => `
+async function fetchStock() {
+    const response = await fetch(`${backendUrl}/stock/`);
+    const data = await response.json();
+    const stockTableBody = document.getElementById('stockTableBody');
+    stockTableBody.innerHTML = data.stock.map(item => `
         <tr>
-          <td>${item.product_name}</td>
-          <td>${item.quantity}</td>
-          <td>UGX ${(item.price_per_unit * item.quantity).toLocaleString()}</td>
-          <td class="actions">
-            <i class="fas fa-trash text-red-500 hover:text-red-700 cursor-pointer" onclick="deleteStockItem('${item.product_name}', '${item.product_type}')"></i>
-            <i class="fas fa-edit text-blue-500 hover:text-blue-700 cursor-pointer ml-2" onclick="editStockItem('${item.product_name}', '${item.product_type}', ${item.quantity}, ${item.price_per_unit})"></i>
-            <i class="fas fa-eye text-green-500 hover:text-green-700 cursor-pointer ml-2" onclick="viewStockItem('${item.product_name}', '${item.product_type}', ${item.quantity}, ${item.price_per_unit})"></i>
-          </td>
+            <td>${item.product_name}</td>
+            <td>${item.quantity}</td>
+            <td>UGX ${(item.price_per_unit * item.quantity).toLocaleString()}</td>
+            <td class="actions">
+                <i class="fas fa-trash text-red-500 hover:text-red-700 cursor-pointer" onclick="deleteStockItem('${item.product_name}', '${item.product_type}')"></i>
+                <i class="fas fa-edit text-blue-500 hover:text-blue-700 cursor-pointer ml-2" onclick="editStockItem('${item.product_name}', '${item.product_type}', ${item.quantity}, ${item.price_per_unit})"></i>
+                <i class="fas fa-eye text-green-500 hover:text-green-700 cursor-pointer ml-2" onclick="viewStockItem('${item.product_name}', '${item.product_type}', ${item.quantity}, ${item.price_per_unit})"></i>
+            </td>
         </tr>
-      `).join('');
-    }
+    `).join('');
+
+    updateTotalInvested(); // Update the total invested amount in the finance card
+}
+
 
     // Fetch Services
     async function fetchServices() {
