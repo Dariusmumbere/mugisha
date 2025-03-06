@@ -194,7 +194,7 @@
           <tr>
             <th>Date</th>
             <th>Client</th>
-            <th>Quantity</th>
+            <th>Items</th>
             <th>Total Amount</th>
             <th>Actions</th>
           </tr>
@@ -263,28 +263,6 @@
         <button type="submit" class="gray-button">Add Service</button>
       </form>
       <button onclick="closeModal('selectServiceModal')" class="close-button mt-2">Close</button>
-    </div>
-  </div>
-
-  <!-- Sales History Modal -->
-  <div id="salesHistoryModal" class="modal-overlay hidden">
-    <div class="modal-content sales-history-modal">
-      <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-history mr-2"></i>Sales History Details</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Client</th>
-            <th>Quantity</th>
-            <th>Total Amount</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="salesHistoryDetails">
-          <!-- Sales history details will be dynamically added here -->
-        </tbody>
-      </table>
-      <button onclick="closeModal('salesHistoryModal')" class="close-button mt-2">Close</button>
     </div>
   </div>
 
@@ -463,117 +441,94 @@
 
       const total = currentSale.reduce((sum, item) => sum + item.total, 0);
 
-      // Update the bank account balance
-      const response = await fetch(`${backendUrl}/bank_account/`);
-      const data = await response.json();
-      const newBalance = data.balance + total;
-
-      await fetch(`${backendUrl}/bank_account/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          balance: newBalance,
-        }),
-      });
-
-      // Generate the receipt PDF
-      const doc = new jsPDF();
-      doc.text('Receipt', 10, 10);
-      doc.text(`Client: ${selectedClient.name}`, 10, 20);
-      doc.text('Items:', 10, 30);
-      currentSale.forEach((item, index) => {
-        doc.text(`${item.itemName} - ${item.quantity} x ${item.unitPrice.toFixed(2)} = ${item.total.toFixed(2)}`, 10, 40 + (index * 10));
-      });
-      doc.text(`Total: ${total.toFixed(2)}`, 10, 40 + (currentSale.length * 10));
-      doc.save('receipt.pdf');
-
-      // Add the sale to the sales history
-      const sale = {
-        date: new Date().toLocaleDateString(),
-        client: selectedClient.name,
-        quantity: currentSale.reduce((sum, item) => sum + item.quantity, 0),
-        totalAmount: total,
+      // Prepare the sale data
+      const saleData = {
+        client_name: selectedClient.name,
+        items: currentSale.map(item => ({
+          name: item.itemName,
+          quantity: item.quantity,
+          unit_price: item.unitPrice,
+          total: item.total,
+        })),
+        total_amount: total,
       };
-      salesHistory.push(sale);
-      updateSalesHistory();
 
-      // Clear the current sale
-      currentSale = [];
-      updateSaleTable();
+      // Send the sale data to the backend
+      try {
+        const response = await fetch(`${backendUrl}/sales/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(saleData),
+        });
+
+        if (response.ok) {
+          alert('Sale created and bank account updated successfully!');
+
+          // Generate the receipt PDF
+          const doc = new jsPDF();
+          doc.text('Receipt', 10, 10);
+          doc.text(`Client: ${selectedClient.name}`, 10, 20);
+          doc.text('Items:', 10, 30);
+          currentSale.forEach((item, index) => {
+            doc.text(`${item.itemName} - ${item.quantity} x ${item.unitPrice.toFixed(2)} = ${item.total.toFixed(2)}`, 10, 40 + (index * 10));
+          });
+          doc.text(`Total: ${total.toFixed(2)}`, 10, 40 + (currentSale.length * 10));
+          doc.save('receipt.pdf');
+
+          // Clear the current sale
+          currentSale = [];
+          updateSaleTable();
+          fetchSalesHistory(); // Refresh sales history
+        } else {
+          alert('Failed to create sale.');
+        }
+      } catch (error) {
+        console.error('Error creating sale:', error);
+        alert('Failed to create sale.');
+      }
     }
 
-    // Update Sales History
+    // Fetch Sales History
+    async function fetchSalesHistory() {
+      try {
+        const response = await fetch(`${backendUrl}/sales/`);
+        const data = await response.json();
+        salesHistory = data.sales;
+        updateSalesHistory();
+      } catch (error) {
+        console.error('Error fetching sales history:', error);
+      }
+    }
+
+    // Update Sales History Table
     function updateSalesHistory() {
       const salesHistoryBody = document.getElementById('salesHistoryBody');
-      salesHistoryBody.innerHTML = salesHistory.map((sale, index) => `
+      salesHistoryBody.innerHTML = salesHistory.map(sale => `
         <tr>
-          <td>${sale.date}</td>
-          <td>${sale.client}</td>
-          <td>${sale.quantity}</td>
-          <td>${sale.totalAmount.toFixed(2)}</td>
+          <td>${new Date(sale.created_at).toLocaleDateString()}</td>
+          <td>${sale.client_name}</td>
           <td>
-            <button onclick="editSale(${index})" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>
-            <button onclick="deleteSale(${index})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+            <ul>
+              ${sale.items.map(item => `
+                <li>${item.name} - ${item.quantity} x ${item.unit_price.toFixed(2)} = ${item.total.toFixed(2)}</li>
+              `).join('')}
+            </ul>
+          </td>
+          <td>${sale.total_amount.toFixed(2)}</td>
+          <td>
+            <button onclick="editSale('${sale.id}')" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>
+            <button onclick="deleteSale('${sale.id}')" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
           </td>
         </tr>
       `).join('');
     }
 
-    // Edit Sale
-    function editSale(index) {
-      const sale = salesHistory[index];
-      alert(`Edit sale for ${sale.client} with total amount ${sale.totalAmount.toFixed(2)}`);
-    }
-
-    // Delete Sale
-    function deleteSale(index) {
-      salesHistory.splice(index, 1);
-      updateSalesHistory();
-    }
-
-    // Open Select Service Modal
-    function openSelectServiceModal() {
-      fetchServices().then(services => {
-        const serviceSelect = document.getElementById('serviceSelect');
-        serviceSelect.innerHTML = '<option value="" disabled selected>Select Service</option>' +
-          services.map(service => `<option value="${service.name}">${service.name} - UGX ${service.price.toFixed(2)}</option>`).join('');
-      });
-      document.getElementById('selectServiceModal').classList.remove('hidden');
-    }
-
-    // Add Service to Sale
-    document.getElementById('selectServiceForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const serviceName = document.getElementById('serviceSelect').value;
-      const quantity = parseFloat(document.getElementById('serviceQuantity').value);
-
-      const response = await fetch(`${backendUrl}/services/`);
-      const data = await response.json();
-      const service = data.services.find(s => s.name === serviceName);
-
-      if (!service) {
-        alert('Service not found!');
-        return;
-      }
-
-      const total = service.price * quantity;
-      currentSale.push({ itemName: serviceName, quantity, unitPrice: service.price, total });
-      updateSaleTable();
-      closeModal('selectServiceModal');
-    });
-
-    // Fetch Services
-    async function fetchServices() {
-      const response = await fetch(`${backendUrl}/services/`);
-      const data = await response.json();
-      return data.services;
-    }
-
     // Initialize
     fetchProducts();
     fetchStock();
+    fetchSalesHistory();
   </script>
 </body>
 </html>
