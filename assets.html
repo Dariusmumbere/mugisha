@@ -217,40 +217,38 @@
       document.getElementById("addAssetModal").classList.add("hidden");
     }
 
-    // Add Asset Form Submission
     document.getElementById("addAssetForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const newAsset = {
-        name: document.getElementById("assetName").value,
-        type: document.getElementById("assetType").value,
-        cost_price: parseFloat(document.getElementById("assetCostPrice").value),
-        current_value: parseFloat(document.getElementById("assetCurrentValue").value),
-        quantity: parseInt(document.getElementById("assetQuantity").value),
-      };
+  e.preventDefault();
+  const newAsset = {
+    name: document.getElementById("assetName").value,
+    type: document.getElementById("assetType").value,
+    cost_price: parseFloat(document.getElementById("assetCostPrice").value),
+    current_value: parseFloat(document.getElementById("assetCurrentValue").value),
+    quantity: parseInt(document.getElementById("assetQuantity").value),
+  };
 
-      const response = await fetch(`${backendUrl}/assets/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newAsset),
-      });
+  const response = await fetch(`${backendUrl}/assets/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(newAsset),
+  });
 
-      if (response.ok) {
-        alert('Asset added successfully!');
-        closeAddAssetModal();
-        renderTable();
-        updateTotalInvestment();
-      } else {
-        alert('Failed to add asset');
-      }
-    });
-
+  if (response.ok) {
+    alert('Asset added successfully!');
+    closeAddAssetModal();
+    renderTable();
+    updateTotalInvestment(); // Ensure this is called
+  } else {
+    alert('Failed to add asset');
+  }
+});
     // Function to update total investment in the finance card
     async function updateTotalInvestment() {
       const response = await fetch(`${backendUrl}/total_investment/`);
       const data = await response.json();
-      const totalInvestment = data.total_investment;
+      const totalInvestment = data.total_investment || 0;
 
       // Update the finance card
       const totalInvestmentElement = document.querySelector('.finance-item:nth-child(2) .amount-box');
@@ -259,9 +257,6 @@
       }
     }
 
-    // Initial Render
-    renderTable();
-    updateTotalInvestment();
   </script>
 </body>
 </html>
