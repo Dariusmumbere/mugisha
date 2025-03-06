@@ -687,38 +687,38 @@
     });
 
     // Add Stock
+// Example: Update total investment after adding stock
 document.getElementById('addStockForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const productName = document.getElementById('stockItemSelect').value;
-    const selectedProduct = document.getElementById('stockItemSelect').options[document.getElementById('stockItemSelect').selectedIndex];
-    const productType = selectedProduct.getAttribute('data-product-type');
-    const quantity = parseFloat(e.target[2].value);
-    const pricePerUnit = parseFloat(e.target[3].value);
+  e.preventDefault();
+  const productName = document.getElementById('stockItemSelect').value;
+  const selectedProduct = document.getElementById('stockItemSelect').options[document.getElementById('stockItemSelect').selectedIndex];
+  const productType = selectedProduct.getAttribute('data-product-type');
+  const quantity = parseFloat(e.target[2].value);
+  const pricePerUnit = parseFloat(e.target[3].value);
 
-    const response = await fetch(`${backendUrl}/stock/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            product_name: productName,
-            product_type: productType,
-            quantity: quantity,
-            price_per_unit: pricePerUnit
-        })
-    });
+  const response = await fetch(`${backendUrl}/stock/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      product_name: productName,
+      product_type: productType,
+      quantity: quantity,
+      price_per_unit: pricePerUnit
+    })
+  });
 
-    if (response.ok) {
-        alert('Stock added successfully!');
-        e.target.reset();
-        closeModal('addStockModal');
-        fetchStock();
-        updateTotalInvested(); // Update the total invested amount in the finance card
-    } else {
-        alert('Failed to add stock');
-    }
+  if (response.ok) {
+    alert('Stock added successfully!');
+    e.target.reset();
+    closeModal('addStockModal');
+    fetchStock();
+    updateTotalInvested(); // Update the total investment
+  } else {
+    alert('Failed to add stock');
+  }
 });
-
 // Function to update the total invested amount in the finance card
 async function updateTotalInvested() {
     const response = await fetch(`${backendUrl}/stock/`);
@@ -1050,11 +1050,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     totalInvestmentElement.textContent = `UGX ${totalInvestment.toLocaleString()}`;
   }
 });
+    // Function to update the total invested amount in the finance card
+async function updateTotalInvested() {
+  const response = await fetch(`${backendUrl}/total_investment/`);
+  const data = await response.json();
+  const totalInvestment = data.total_investment || 0;
 
+  const totalInvestmentElement = document.querySelector('.finance-item:nth-child(2) .amount-box');
+  if (totalInvestmentElement) {
+    totalInvestmentElement.textContent = `UGX ${totalInvestment.toLocaleString()}`;
+  }
+}
     // Initialize
     fetchProducts();
     fetchStock();
     fetchServices();
+    fetchTotalInvestment();
+    updateTotalInvested();
   </script>
 </body>
 </html>
