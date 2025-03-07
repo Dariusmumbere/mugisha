@@ -404,19 +404,28 @@
           <!-- Stock items will be dynamically added here -->
         </tbody>
       </table>
+      <button onclick="openAddStockModal()" class="gray-button mt-4">
+        <i class="fas fa-plus mr-2"></i>Add New Quantity
+      </button>
       <button onclick="closeModal('stockManagementModal')" class="close-button mt-2">Close</button>
     </div>
   </div>
 
-  <!-- Add Quantity Modal -->
-  <div id="addQuantityModal" class="modal-overlay hidden">
+  <!-- Add Stock Modal -->
+  <div id="addStockModal" class="modal-overlay hidden">
     <div class="modal-content">
       <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-plus mr-2"></i>Add New Quantity</h3>
-      <form id="addQuantityForm">
+      <form id="addStockForm">
+        <select id="stockItemSelect" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+          <option value="" disabled selected>Select Product</option>
+          <!-- Product options will be dynamically added here -->
+        </select>
+        <input type="number" id="defaultUnitPriceInput" placeholder="Default Unit Price" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required readonly>
         <input type="number" placeholder="Quantity" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+        <input type="number" placeholder="Price per Unit" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
         <button type="submit" class="gray-button">Add Quantity</button>
       </form>
-      <button onclick="closeModal('addQuantityModal')" class="close-button mt-2">Close</button>
+      <button onclick="closeModal('addStockModal')" class="close-button mt-2">Close</button>
     </div>
   </div>
 
@@ -524,7 +533,6 @@
         themeIcon.classList.add('fa-moon');
       }
     });
-
     // Open Deposit Modal
     function openDepositModal() {
       document.getElementById('depositModal').classList.remove('hidden');
@@ -534,7 +542,6 @@
     function openWithdrawModal() {
       document.getElementById('withdrawModal').classList.remove('hidden');
     }
-
     // Deposit Form Submission
     document.getElementById('depositForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -592,6 +599,7 @@
     // Initialize
     fetchBankAccountBalance();
 
+
     // Fetch and display bank account balance
     async function fetchBankAccountBalance() {
       const response = await fetch(`${backendUrl}/bank_account/`);
@@ -613,40 +621,33 @@
       fetchStock();
     }
 
-    // Open Add Quantity Modal
-    function openAddQuantityModal(productName, productType) {
-      document.getElementById('addQuantityModal').classList.remove('hidden');
-      document.getElementById('addQuantityForm').dataset.productName = productName;
-      document.getElementById('addQuantityForm').dataset.productType = productType;
+    // Open Add Stock Modal
+    function openAddStockModal() {
+    fetchProducts().then(products => {
+        const stockItemSelect = document.getElementById('stockItemSelect');
+        stockItemSelect.innerHTML = '<option value="" disabled selected>Select Product</option>' +
+            products.map(product => `<option value="${product.name}" data-buying-price="${product.buying_price}" data-product-type="${product.type}">${product.name} (${product.type})</option>`).join('');
+    });
+    document.getElementById('addStockModal').classList.remove('hidden');
+}
+
+    // Populate Default Unit Price when Product is selected
+    document.getElementById('stockItemSelect').addEventListener('change', (e) => {
+      const selectedProduct = e.target.options[e.target.selectedIndex];
+      const buyingPrice = selectedProduct.getAttribute('data-buying-price');
+      document.getElementById('defaultUnitPriceInput').value = buyingPrice || '';
+    });
+
+    // Open Add Service Modal
+    function openAddServiceModal() {
+      document.getElementById('addServiceModal').classList.remove('hidden');
     }
 
-    // Add Quantity Form Submission
-    document.getElementById('addQuantityForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const productName = e.target.dataset.productName;
-      const productType = e.target.dataset.productType;
-      const quantity = parseFloat(e.target[0].value);
-
-      const response = await fetch(`${backendUrl}/stock/${productName}/${productType}/add_quantity`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          quantity: quantity
-        })
-      });
-
-      if (response.ok) {
-        alert('Quantity added successfully!');
-        e.target.reset();
-        closeModal('addQuantityModal');
-        fetchStock(); // Refresh the stock table
-        updateTotalInvested(); // Update the total invested amount in the finance card
-      } else {
-        alert('Failed to add quantity');
-      }
-    });
+    // Open Service Management Modal
+    function openServiceManagementModal() {
+      document.getElementById('serviceManagementModal').classList.remove('hidden');
+      fetchServices();
+    }
 
     // Close Modals
     function closeModal(modalId) {
@@ -685,59 +686,86 @@
     });
 
     // Add Stock
-    document.getElementById('addStockForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const productName = document.getElementById('stockItemSelect').value;
-      const selectedProduct = document.getElementById('stockItemSelect').options[document.getElementById('stockItemSelect').selectedIndex];
-      const productType = selectedProduct.getAttribute('data-product-type');
-      const quantity = parseFloat(e.target[2].value);
-      const pricePerUnit = parseFloat(e.target[3].value);
+// Example: Update total investment after adding stock
+document.getElementById('addStockForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const productName = document.getElementById('stockItemSelect').value;
+  const selectedProduct = document.getElementById('stockItemSelect').options[document.getElementById('stockItemSelect').selectedIndex];
+  const productType = selectedProduct.getAttribute('data-product-type');
+  const quantity = parseFloat(e.target[2].value);
+  const pricePerUnit = parseFloat(e.target[3].value);
 
-      const response = await fetch(`${backendUrl}/stock/`, {
+  const response = await fetch(`${backendUrl}/stock/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      product_name: productName,
+      product_type: productType,
+      quantity: quantity,
+      price_per_unit: pricePerUnit
+    })
+  });
+
+  if (response.ok) {
+    alert('Stock added successfully!');
+    e.target.reset();
+    closeModal('addStockModal');
+    fetchStock();
+    updateTotalInvested(); // Update the total investment
+  } else {
+    alert('Failed to add stock');
+  }
+});
+// Function to update the total invested amount in the finance card
+async function updateTotalInvested() {
+    const response = await fetch(`${backendUrl}/stock/`);
+    const data = await response.json();
+    let totalInvested = 0;
+
+    data.stock.forEach(item => {
+        totalInvested += item.quantity * item.price_per_unit;
+    });
+
+    document.querySelector('.finance-item:nth-child(3) .amount-box').textContent = `UGX ${totalInvested.toLocaleString()}`;
+}
+
+
+// Initialize
+fetchProducts();
+fetchStock();
+fetchServices();
+updateTotalInvested();   
+
+    // Add Service
+    document.getElementById('addServiceForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const serviceName = e.target[0].value;
+      const serviceDescription = e.target[1].value;
+      const servicePrice = parseFloat(e.target[2].value);
+
+      const response = await fetch(`${backendUrl}/services/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          product_name: productName,
-          product_type: productType,
-          quantity: quantity,
-          price_per_unit: pricePerUnit
+          name: serviceName,
+          description: serviceDescription,
+          price: servicePrice
         })
       });
 
       if (response.ok) {
-        alert('Stock added successfully!');
+        alert('Service added successfully!');
         e.target.reset();
-        closeModal('addStockModal');
-        fetchStock();
-        updateTotalInvested(); // Update the total investment
+        closeModal('addServiceModal');
+        fetchServices();
       } else {
-        alert('Failed to add stock');
+        alert('Failed to add service');
       }
     });
-
-    // Function to update the total invested amount in the finance card
-    async function updateTotalInvested() {
-      const response = await fetch(`${backendUrl}/stock/`);
-      const data = await response.json();
-      let totalInvested = 0;
-
-      data.stock.forEach(item => {
-          totalInvested += item.quantity * item.price_per_unit;
-      });
-
-      const amountInStockElement = document.querySelector('.finance-item:nth-child(3) .amount-box');
-      if (amountInStockElement) {
-          amountInStockElement.textContent = `UGX ${totalInvested.toLocaleString()}`;
-      }
-    }
-
-    // Initialize
-    fetchProducts();
-    fetchStock();
-    fetchServices();
-    updateTotalInvested();
 
     // Fetch Products
     async function fetchProducts() {
@@ -758,11 +786,11 @@
     }
 
     // Fetch Stock
-    async function fetchStock() {
-      const response = await fetch(`${backendUrl}/stock/`);
-      const data = await response.json();
-      const stockTableBody = document.getElementById('stockTableBody');
-      stockTableBody.innerHTML = data.stock.map(item => `
+async function fetchStock() {
+    const response = await fetch(`${backendUrl}/stock/`);
+    const data = await response.json();
+    const stockTableBody = document.getElementById('stockTableBody');
+    stockTableBody.innerHTML = data.stock.map(item => `
         <tr>
             <td>${item.product_name}</td>
             <td>${item.quantity}</td>
@@ -771,13 +799,13 @@
                 <i class="fas fa-trash text-red-500 hover:text-red-700 cursor-pointer" onclick="deleteStockItem('${item.product_name}', '${item.product_type}')"></i>
                 <i class="fas fa-edit text-blue-500 hover:text-blue-700 cursor-pointer ml-2" onclick="editStockItem('${item.product_name}', '${item.product_type}', ${item.quantity}, ${item.price_per_unit})"></i>
                 <i class="fas fa-eye text-green-500 hover:text-green-700 cursor-pointer ml-2" onclick="viewStockItem('${item.product_name}', '${item.product_type}', ${item.quantity}, ${item.price_per_unit})"></i>
-                <i class="fas fa-plus text-green-500 hover:text-green-700 cursor-pointer ml-2" onclick="openAddQuantityModal('${item.product_name}', '${item.product_type}')"></i>
             </td>
         </tr>
-      `).join('');
+    `).join('');
 
-      updateTotalInvested(); // Update the total invested amount in the finance card
-    }
+    updateTotalInvested(); // Update the total invested amount in the finance card
+}
+
 
     // Fetch Services
     async function fetchServices() {
@@ -1011,58 +1039,54 @@
         document.getElementById('sellingPriceInput').value = sellingPrice.toFixed(2);
       }
     });
-
     // On page load, fetch the total investment from the backend
-    document.addEventListener('DOMContentLoaded', async () => {
-      const response = await fetch(`${backendUrl}/total_investment/`);
-      const data = await response.json();
-      const totalInvestment = data.total_investment || 0;
+document.addEventListener('DOMContentLoaded', async () => {
+  const response = await fetch(`${backendUrl}/total_investment/`);
+  const data = await response.json();
+  const totalInvestment = data.total_investment || 0;
 
-      const totalInvestmentElement = document.querySelector('.finance-item:nth-child(2) .amount-box');
-      if (totalInvestmentElement) {
-        totalInvestmentElement.textContent = `UGX ${totalInvestment.toLocaleString()}`;
-      }
-    });
-
+  const totalInvestmentElement = document.querySelector('.finance-item:nth-child(2) .amount-box');
+  if (totalInvestmentElement) {
+    totalInvestmentElement.textContent = `UGX ${totalInvestment.toLocaleString()}`;
+  }
+});
     document.addEventListener('DOMContentLoaded', () => {
-      fetchBankAccountBalance();
-      fetchTotalInvestment();
-      fetchTotalStock(); // Add this line
-    });
-
+    fetchBankAccountBalance();
+    fetchTotalInvestment();
+    fetchTotalStock(); // Add this line
+});
     // Function to fetch and display the total amount in stock
-    async function fetchTotalStock() {
-      const response = await fetch(`${backendUrl}/total_stock/`);
-      const data = await response.json();
-      const totalStock = data.total_stock || 0;
+async function fetchTotalStock() {
+    const response = await fetch(`${backendUrl}/total_stock/`);
+    const data = await response.json();
+    const totalStock = data.total_stock || 0;
 
-      const totalStockElement = document.querySelector('.finance-item:nth-child(3) .amount-box');
-      if (totalStockElement) {
+    const totalStockElement = document.querySelector('.finance-item:nth-child(3) .amount-box');
+    if (totalStockElement) {
         totalStockElement.textContent = `UGX ${totalStock.toLocaleString()}`;
-      }
     }
+}
 
-    // Initialize
-    fetchTotalStock();
-
+// Initialize
+fetchTotalStock();
     // Function to update the total invested amount in the finance card
-    async function updateTotalInvested() {
-      const response = await fetch(`${backendUrl}/total_investment/`);
-      const data = await response.json();
-      const totalInvestment = data.total_investment || 0;
+async function updateTotalInvested() {
+  const response = await fetch(`${backendUrl}/total_investment/`);
+  const data = await response.json();
+  const totalInvestment = data.total_investment || 0;
 
-      const totalInvestmentElement = document.querySelector('.finance-item:nth-child(2) .amount-box');
-      if (totalInvestmentElement) {
-        totalInvestmentElement.textContent = `UGX ${totalInvestment.toLocaleString()}`;
-      }
-    }
-
+  const totalInvestmentElement = document.querySelector('.finance-item:nth-child(2) .amount-box');
+  if (totalInvestmentElement) {
+    totalInvestmentElement.textContent = `UGX ${totalInvestment.toLocaleString()}`;
+  }
+}
     // Initialize
     fetchProducts();
     fetchStock();
     fetchServices();
     fetchTotalInvestment();
     updateTotalInvested();
+    
   </script>
 </body>
-</html>
+</html>,
