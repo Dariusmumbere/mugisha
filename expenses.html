@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Expenses - NDYAKURUNGI ITECH</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
+  <style>
+    /* Custom styles for modern design */
+    .overview {
+      font-size: 34px;
+      text-align: center;
+      background-color: rgb(19, 19, 71);
+      margin-bottom: 15px;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .dark .modal-content {
+      background-color: #1f2937;
+      color: white;
+    }
+    .table-header {
+      background-color: #f9fafb;
+      font-weight: 600;
+      color: #374151;
+    }
+    .dark .table-header {
+      background-color: #1f2937;
+      color: #f9fafb;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900">
+  <!-- Header -->
+  <header class="bg-white dark:bg-gray-800 shadow">
+    <div class="container mx-auto p-4 flex items-center justify-between">
+      <div class="flex items-center">
+        <div class="text-4xl text-blue-600 dark:text-blue-400 mr-4">
+          <img src="Itech-computers-logo1.webp" alt="Itech Computers Logo">
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold dark:text-white">NDYAKURUNGI ITECH COMPUTER SOLUTIONS</h1>
+          <p class="text-sm text-gray-600 dark:text-gray-400">Name it, we will provide & deliver it</p>
+        </div>
+      </div>
+      <button id="themeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700">
+        <i id="themeIcon" class="fas fa-moon text-gray-800 dark:text-yellow-400"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Daily Expenses Section -->
+  <div class="container mx-auto p-8">
+    <h1 class="overview">Daily Expenses</h1>
+
+    <!-- Search Bar -->
+    <div class="mb-4">
+      <input
+        type="text"
+        id="expenseSearch"
+        placeholder="Search expenses..."
+        class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
+      />
+    </div>
+
+    <!-- Expenses Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse">
+        <thead>
+          <tr class="table-header">
+            <th class="p-2 text-left">S/N</th>
+            <th class="p-2 text-left">Date</th>
+            <th class="p-2 text-left">Person</th>
+            <th class="p-2 text-left">Description</th>
+            <th class="p-2 text-left">Cost (UGX)</th>
+            <th class="p-2 text-left">Quantity</th>
+            <th class="p-2 text-left">Total (UGX)</th>
+            <th class="p-2 text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="expensesTableBody">
+          <!-- Expenses will be dynamically added here -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Add Expense Button -->
+    <button
+      onclick="openAddExpenseModal()"
+      class="mt-4 p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+    >
+      <i class="fas fa-plus mr-2"></i>Add Expense
+    </button>
+  </div>
+
+  <!-- Add Expense Modal -->
+  <div id="addExpenseModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3 class="text-lg font-semibold mb-4 dark:text-white">
+        <i class="fas fa-plus mr-2"></i>Add Expense
+      </h3>
+      <form id="addExpenseForm">
+        <input
+          type="date"
+          id="expenseDate"
+          class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white"
+          required
+        />
+        <input
+          type="text"
+          placeholder="Person Making Expense"
+          class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white"
+          required
+        />
+        <input
+          type="text"
+          placeholder="Expense Description"
+          class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white"
+          required
+        />
+        <input
+          type="number"
+          placeholder="Cost (UGX)"
+          class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white"
+          required
+        />
+        <input
+          type="number"
+          placeholder="Quantity"
+          class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white"
+          required
+        />
+        <button type="submit" class="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+          Add Expense
+        </button>
+      </form>
+      <button
+        onclick="closeModal('addExpenseModal')"
+        class="w-full p-2 bg-red-500 text-white rounded hover:bg-red-600 mt-2"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    const backendUrl = 'https://man-m681.onrender.com'; // Replace with your Render backend URL
+
+    // Initialize expenses array
+    let expenses = [];
+
+    // Fetch and display expenses
+    async function fetchExpenses() {
+      const response = await fetch(`${backendUrl}/expenses/`);
+      const data = await response.json();
+      expenses = data.expenses;
+      renderExpenses(expenses);
+    }
+
+    // Render expenses in the table
+    function renderExpenses(expenses) {
+      const expensesTableBody = document.getElementById("expensesTableBody");
+      expensesTableBody.innerHTML = expenses
+        .map(
+          (expense, index) => `
+            <tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
+              <td class="p-2">${index + 1}</td>
+              <td class="p-2">${expense.date}</td>
+              <td class="p-2">${expense.person}</td>
+              <td class="p-2">${expense.description}</td>
+              <td class="p-2">${expense.cost.toLocaleString()}</td>
+              <td class="p-2">${expense.quantity}</td>
+              <td class="p-2">${expense.total.toLocaleString()}</td>
+              <td class="p-2">
+                <button onclick="deleteExpense(${expense.id})" class="text-red-500 hover:text-red-700">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          `
+        )
+        .join("");
+    }
+
+    // Add Expense
+    document.getElementById("addExpenseForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const date = document.getElementById("expenseDate").value;
+      const person = e.target[1].value;
+      const description = e.target[2].value;
+      const cost = parseFloat(e.target[3].value);
+      const quantity = parseFloat(e.target[4].value);
+
+      const response = await fetch(`${backendUrl}/expenses/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          date,
+          person,
+          description,
+          cost,
+          quantity,
+        }),
+      });
+
+      if (response.ok) {
+        alert("Expense added successfully!");
+        fetchExpenses();
+        closeModal("addExpenseModal");
+        e.target.reset();
+      } else {
+        alert("Failed to add expense");
+      }
+    });
+
+    // Delete Expense
+    async function deleteExpense(expenseId) {
+      if (confirm("Are you sure you want to delete this expense?")) {
+        const response = await fetch(`${backendUrl}/expenses/${expenseId}`, {
+          method: "DELETE",
+        });
+
+        if (response.ok) {
+          alert("Expense deleted successfully!");
+          fetchExpenses();
+        } else {
+          alert("Failed to delete expense");
+        }
+      }
+    }
+
+    // Search Expenses
+    document.getElementById("expenseSearch").addEventListener("input", (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      const filteredExpenses = expenses.filter(
+        (expense) =>
+          expense.person.toLowerCase().includes(searchTerm) ||
+          expense.description.toLowerCase().includes(searchTerm)
+      );
+      renderExpenses(filteredExpenses);
+    });
+
+    // Open Add Expense Modal
+    function openAddExpenseModal() {
+      document.getElementById("addExpenseModal").classList.remove("hidden");
+    }
+
+    // Close Modals
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add("hidden");
+    }
+
+    // Initialize
+    fetchExpenses();
+  </script>
+</body>
+</html>
