@@ -388,49 +388,22 @@
   </div>
 
   <!-- Stock Management Modal -->
-  <div id="addQuantityModal" class="modal-overlay hidden">
-  <div class="modal-content">
-    <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-plus mr-2"></i>Add New Quantity</h3>
-    <form id="addQuantityForm">
-      <input type="hidden" id="selectedProductName">
-      <input type="hidden" id="selectedProductType">
-      <input type="number" placeholder="Quantity" id="newQuantity" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
-      <button type="submit" class="gray-button">Save</button>
-    </form>
-    <button onclick="closeModal('addQuantityModal')" class="close-button mt-2">Close</button>
-  </div>
-</div>
-
   <div id="stockManagementModal" class="modal-overlay hidden">
     <div class="modal-content">
       <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-boxes mr-2"></i>Manage Stock</h3>
       <table class="stock-table">
-  <thead>
-    <tr>
-      <th>Product Name</th>
-      <th>Available Quantity</th>
-      <th>Total Invested</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody id="stockTableBody">
-    <!-- Stock items will be dynamically added here -->
-    <tr>
-      <td>Product A</td>
-      <td>10</td>
-      <td>UGX 1000</td>
-      <td class="actions">
-        <i class="fas fa-plus text-green-500 hover:text-green-700 cursor-pointer" onclick="openAddQuantityModal('Product A', 'Type A')"></i>
-        <i class="fas fa-trash text-red-500 hover:text-red-700 cursor-pointer ml-2" onclick="deleteStockItem('Product A', 'Type A')"></i>
-        <i class="fas fa-edit text-blue-500 hover:text-blue-700 cursor-pointer ml-2" onclick="editStockItem('Product A', 'Type A', 10, 100)"></i>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-      <button onclick="openAddStockModal()" class="gray-button mt-4">
-        <i class="fas fa-plus mr-2"></i>Add New Quantity
-      </button>
+        <thead>
+          <tr>
+            <th>Product Name</th>
+            <th>Available Quantity</th>
+            <th>Total Invested</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="stockTableBody">
+          <!-- Stock items will be dynamically added here -->
+        </tbody>
+      </table>
       <button onclick="closeModal('stockManagementModal')" class="close-button mt-2">Close</button>
     </div>
   </div>
@@ -823,6 +796,7 @@ async function fetchStock() {
                 <i class="fas fa-trash text-red-500 hover:text-red-700 cursor-pointer" onclick="deleteStockItem('${item.product_name}', '${item.product_type}')"></i>
                 <i class="fas fa-edit text-blue-500 hover:text-blue-700 cursor-pointer ml-2" onclick="editStockItem('${item.product_name}', '${item.product_type}', ${item.quantity}, ${item.price_per_unit})"></i>
                 <i class="fas fa-eye text-green-500 hover:text-green-700 cursor-pointer ml-2" onclick="viewStockItem('${item.product_name}', '${item.product_type}', ${item.quantity}, ${item.price_per_unit})"></i>
+                <i class="fas fa-plus text-green-500 hover:text-green-700 cursor-pointer ml-2" onclick="openAddQuantityModal('${item.product_name}', '${item.product_type}')"></i>
             </td>
         </tr>
     `).join('');
@@ -830,6 +804,42 @@ async function fetchStock() {
     updateTotalInvested(); // Update the total invested amount in the finance card
 }
 
+    // Open Add Quantity Modal
+    function openAddQuantityModal(productName, productType) {
+      document.getElementById('addQuantityModal').classList.remove('hidden');
+      document.getElementById('addQuantityForm').dataset.productName = productName;
+      document.getElementById('addQuantityForm').dataset.productType = productType;
+    }
+
+    // Add Quantity Form Submission
+    document.getElementById('addQuantityForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const productName = e.target.dataset.productName;
+      const productType = e.target.dataset.productType;
+      const quantity = parseFloat(e.target[0].value);
+
+      const response = await fetch(`${backendUrl}/stock/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          product_name: productName,
+          product_type: productType,
+          quantity: quantity,
+          price_per_unit: 0 // Assuming price per unit is not needed for adding quantity
+        })
+      });
+
+      if (response.ok) {
+        alert('Quantity added successfully!');
+        e.target.reset();
+        closeModal('addQuantityModal');
+        fetchStock();
+      } else {
+        alert('Failed to add quantity');
+      }
+    });
 
     // Fetch Services
     async function fetchServices() {
@@ -1104,40 +1114,6 @@ async function updateTotalInvested() {
     totalInvestmentElement.textContent = `UGX ${totalInvestment.toLocaleString()}`;
   }
 }
-    // Function to open the add quantity modal
-function openAddQuantityModal(productName, productType) {
-  document.getElementById('selectedProductName').value = productName;
-  document.getElementById('selectedProductType').value = productType;
-  document.getElementById('addQuantityModal').classList.remove('hidden');
-}
-
-// Function to handle the form submission for adding new quantity
-document.getElementById('addQuantityForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const productName = document.getElementById('selectedProductName').value;
-  const productType = document.getElementById('selectedProductType').value;
-  const newQuantity = parseFloat(document.getElementById('newQuantity').value);
-
-  const response = await fetch(`${backendUrl}/stock/add_quantity`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      product_name: productName,
-      product_type: productType,
-      quantity: newQuantity
-    })
-  });
-
-  if (response.ok) {
-    alert('Quantity added successfully!');
-    closeModal('addQuantityModal');
-    fetchStock(); // Refresh the stock table
-  } else {
-    alert('Failed to add quantity');
-  }
-});
     // Initialize
     fetchProducts();
     fetchStock();
