@@ -544,7 +544,7 @@ async function populateServiceSelect() {
   const services = await fetchServices();
   const serviceSelect = document.getElementById('serviceSelect');
   serviceSelect.innerHTML = '<option value="" disabled selected>Select Service</option>' +
-    services.map(service => `<option value="${service.name}" data-price="${service.price}">${service.name} (${service.price})</option>`).join('');
+    services.map(service => `<option value="${service.name}" data-price="${service.price}">${service.name} (UGX ${service.price})</option>`).join('');
 }
 
 // Open Select Service Modal
