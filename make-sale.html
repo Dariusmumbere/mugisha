@@ -422,7 +422,7 @@
     // Select Client
     function selectClient(clientName) {
       selectedClient = clients.find(client => client.name === clientName);
-      document.getElementById('selectedClientName').textContent = `Bill to ${selectedClient.name}`;
+      document.getElementById('selectedClientName').textContent = `Bill to : ${selectedClient.name}`;
       closeModal('chooseClientModal');
     }
 
