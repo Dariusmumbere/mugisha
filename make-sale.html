@@ -574,6 +574,55 @@ document.getElementById('selectServiceForm').addEventListener('submit', async (e
   updateSaleTable();
   closeModal('selectServiceModal');
 });
+    // Edit Sale
+async function editSale(saleId) {
+  // Fetch the sale details by ID
+  try {
+    const response = await fetch(`${backendUrl}/sales/${saleId}`);
+    const sale = await response.json();
+
+    // Populate the current sale with the fetched sale details
+    currentSale = sale.items.map(item => ({
+      itemName: item.name,
+      quantity: item.quantity,
+      unitPrice: item.unit_price,
+      total: item.total,
+    }));
+
+    // Update the sale table and total
+    updateSaleTable();
+
+    // Set the selected client
+    selectedClient = { name: sale.client_name };
+    document.getElementById('selectedClientName').textContent = `Bill to : ${selectedClient.name}`;
+
+    alert('Sale loaded for editing. Update the sale and generate a new receipt.');
+  } catch (error) {
+    console.error('Error fetching sale:', error);
+    alert('Failed to load sale for editing.');
+  }
+}
+
+// Delete Sale
+async function deleteSale(saleId) {
+  if (confirm('Are you sure you want to delete this sale?')) {
+    try {
+      const response = await fetch(`${backendUrl}/sales/${saleId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        alert('Sale deleted successfully!');
+        fetchSalesHistory(); // Refresh the sales history
+      } else {
+        alert('Failed to delete sale.');
+      }
+    } catch (error) {
+      console.error('Error deleting sale:', error);
+      alert('Failed to delete sale.');
+    }
+  }
+}
 
     // Initialize
     fetchProducts();
