@@ -786,6 +786,8 @@ updateTotalInvested();
 async function fetchStock() {
     const response = await fetch(`${backendUrl}/stock/`);
     const data = await response.json();
+    console.log("Fetched Stock Data:", data); // Debugging: Log the fetched stock data
+
     const stockTableBody = document.getElementById('stockTableBody');
     stockTableBody.innerHTML = data.stock.map(item => `
         <tr>
@@ -812,34 +814,33 @@ async function fetchStock() {
     }
 
     // Add Quantity Form Submission
-    document.getElementById('addQuantityForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const productName = e.target.dataset.productName;
-      const productType = e.target.dataset.productType;
-      const quantity = parseFloat(e.target[0].value);
+    // Add Quantity Form Submission
+document.getElementById('addQuantityForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const productName = e.target.dataset.productName;
+    const productType = e.target.dataset.productType;
+    const quantity = parseFloat(e.target[0].value);
 
-      const response = await fetch(`${backendUrl}/stock/`, {
-        method: 'POST',
+    const response = await fetch(`${backendUrl}/stock/${productName}/${productType}/add_quantity`, {
+        method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
+            'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          product_name: productName,
-          product_type: productType,
-          quantity: quantity,
-          price_per_unit: 0 // Assuming price per unit is not needed for adding quantity
+            quantity: quantity
         })
-      });
+    });
 
-      if (response.ok) {
+    if (response.ok) {
         alert('Quantity added successfully!');
         e.target.reset();
         closeModal('addQuantityModal');
-        fetchStock();
-      } else {
+        fetchStock(); // Refresh the stock table
+        updateTotalInvested(); // Update the total invested amount in the finance card
+    } else {
         alert('Failed to add quantity');
-      }
-    });
+    }
+});
 
     // Fetch Services
     async function fetchServices() {
@@ -1104,15 +1105,21 @@ async function fetchTotalStock() {
 // Initialize
 fetchTotalStock();
     // Function to update the total invested amount in the finance card
+// Function to update the total invested amount in the finance card
 async function updateTotalInvested() {
-  const response = await fetch(`${backendUrl}/total_investment/`);
-  const data = await response.json();
-  const totalInvestment = data.total_investment || 0;
+    const response = await fetch(`${backendUrl}/stock/`);
+    const data = await response.json();
+    let totalInvested = 0;
 
-  const totalInvestmentElement = document.querySelector('.finance-item:nth-child(2) .amount-box');
-  if (totalInvestmentElement) {
-    totalInvestmentElement.textContent = `UGX ${totalInvestment.toLocaleString()}`;
-  }
+    data.stock.forEach(item => {
+        totalInvested += item.quantity * item.price_per_unit;
+    });
+
+    // Update the "Amount in Stock" in the finance card
+    const amountInStockElement = document.querySelector('.finance-item:nth-child(3) .amount-box');
+    if (amountInStockElement) {
+        amountInStockElement.textContent = `UGX ${totalInvested.toLocaleString()}`;
+    }
 }
     // Initialize
     fetchProducts();
