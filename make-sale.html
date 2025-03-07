@@ -528,6 +528,50 @@
         </tr>
       `).join('');
     }
+    // Fetch Services from Backend
+async function fetchServices() {
+  try {
+    const response = await fetch(`${backendUrl}/services/`); // Adjust the endpoint as needed
+    const data = await response.json();
+    return data.services; // Adjust based on your backend response structure
+  } catch (error) {
+    console.error('Error fetching services:', error);
+    return [];
+  }
+}
+
+// Populate Service Select Dropdown
+async function populateServiceSelect() {
+  const services = await fetchServices();
+  const serviceSelect = document.getElementById('serviceSelect');
+  serviceSelect.innerHTML = '<option value="" disabled selected>Select Service</option>' +
+    services.map(service => `<option value="${service.name}">${service.name}</option>`).join('');
+}
+
+// Open Select Service Modal
+async function openSelectServiceModal() {
+  await populateServiceSelect(); // Fetch and populate services before showing the modal
+  document.getElementById('selectServiceModal').classList.remove('hidden');
+}
+
+// Add Service to Sale
+document.getElementById('selectServiceForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const serviceName = document.getElementById('serviceSelect').value;
+  const quantity = parseFloat(document.getElementById('serviceQuantity').value);
+
+  // Fetch service details (assuming services are fetched and stored in a variable)
+  const service = services.find(s => s.name === serviceName);
+  if (!service) {
+    alert('Service not found!');
+    return;
+  }
+
+  const total = service.price * quantity;
+  currentSale.push({ itemName: serviceName, quantity, unitPrice: service.price, total });
+  updateSaleTable();
+  closeModal('selectServiceModal');
+});
     function openSelectServiceModal() {
   document.getElementById('selectServiceModal').classList.remove('hidden');
 }
