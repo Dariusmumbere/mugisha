@@ -253,22 +253,21 @@
     </div>
   </div>
 
-  <!-- Select Service Modal -->
-  <div id="selectServiceModal" class="modal-overlay hidden">
-    <div class="modal-content">
-      <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-cogs mr-2"></i>Select Service</h3>
-      <form id="selectServiceForm">
-        <select id="serviceSelect" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
-          <option value="" disabled selected>Select Service</option>
-          <!-- Services will be dynamically added here -->
-        </select>
-        <input type="number" placeholder="Quantity" id="serviceQuantity" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
-        <button type="submit" class="gray-button">Add Service</button>
-      </form>
-      <button onclick="closeModal('selectServiceModal')" class="close-button mt-2">Close</button>
-    </div>
+ <!-- Select Service Modal -->
+<div id="selectServiceModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-cogs mr-2"></i>Select Service</h3>
+    <form id="selectServiceForm">
+      <select id="serviceSelect" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+        <option value="" disabled selected>Select Service</option>
+        <!-- Services will be dynamically added here -->
+      </select>
+      <input type="number" placeholder="Quantity" id="serviceQuantity" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+      <button type="submit" class="gray-button">Add Service</button>
+    </form>
+    <button onclick="closeModal('selectServiceModal')" class="close-button mt-2">Close</button>
   </div>
-
+</div>
   <!-- JavaScript -->
   <script>
     const { jsPDF } = window.jspdf;
@@ -528,12 +527,12 @@
         </tr>
       `).join('');
     }
-    // Fetch Services from Backend
+// Fetch Services from Backend
 async function fetchServices() {
   try {
-    const response = await fetch(`${backendUrl}/services/`); // Adjust the endpoint as needed
+    const response = await fetch(`${backendUrl}/services/`);
     const data = await response.json();
-    return data.services; // Adjust based on your backend response structure
+    return data.services; // Array of services
   } catch (error) {
     console.error('Error fetching services:', error);
     return [];
@@ -545,7 +544,7 @@ async function populateServiceSelect() {
   const services = await fetchServices();
   const serviceSelect = document.getElementById('serviceSelect');
   serviceSelect.innerHTML = '<option value="" disabled selected>Select Service</option>' +
-    services.map(service => `<option value="${service.name}">${service.name}</option>`).join('');
+    services.map(service => `<option value="${service.name}" data-price="${service.price}">${service.name} ($${service.price})</option>`).join('');
 }
 
 // Open Select Service Modal
@@ -560,15 +559,18 @@ document.getElementById('selectServiceForm').addEventListener('submit', async (e
   const serviceName = document.getElementById('serviceSelect').value;
   const quantity = parseFloat(document.getElementById('serviceQuantity').value);
 
-  // Fetch service details (assuming services are fetched and stored in a variable)
-  const service = services.find(s => s.name === serviceName);
-  if (!service) {
-    alert('Service not found!');
+  // Get the selected service's price
+  const serviceSelect = document.getElementById('serviceSelect');
+  const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+  const unitPrice = parseFloat(selectedOption.getAttribute('data-price'));
+
+  if (!serviceName || !quantity || isNaN(unitPrice)) {
+    alert('Please select a service and enter a valid quantity.');
     return;
   }
 
-  const total = service.price * quantity;
-  currentSale.push({ itemName: serviceName, quantity, unitPrice: service.price, total });
+  const total = unitPrice * quantity;
+  currentSale.push({ itemName: serviceName, quantity, unitPrice, total });
   updateSaleTable();
   closeModal('selectServiceModal');
 });
