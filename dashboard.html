@@ -429,6 +429,21 @@
     </div>
   </div>
 
+  <!-- Edit Stock Modal -->
+  <div id="editStockModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-edit mr-2"></i>Edit Stock</h3>
+      <form id="editStockForm">
+        <input type="hidden" id="editProductName" value="">
+        <input type="hidden" id="editProductType" value="">
+        <input type="number" id="editQuantity" placeholder="Quantity" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+        <input type="number" id="editPricePerUnit" placeholder="Price per Unit" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+        <button type="submit" class="gray-button">Update Stock</button>
+      </form>
+      <button onclick="closeModal('editStockModal')" class="close-button mt-2">Close</button>
+    </div>
+  </div>
+
   <!-- Product Details Modal -->
   <div id="productDetailsModal" class="modal-overlay hidden">
     <div class="modal-content">
