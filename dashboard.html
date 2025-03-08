@@ -430,19 +430,19 @@
   </div>
 
   <!-- Edit Stock Modal -->
-  <div id="editStockModal" class="modal-overlay hidden">
-    <div class="modal-content">
-      <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-edit mr-2"></i>Edit Stock</h3>
-      <form id="editStockForm">
-        <input type="hidden" id="editProductName" value="">
-        <input type="hidden" id="editProductType" value="">
-        <input type="number" id="editQuantity" placeholder="Quantity" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
-        <input type="number" id="editPricePerUnit" placeholder="Price per Unit" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
-        <button type="submit" class="gray-button">Update Stock</button>
-      </form>
-      <button onclick="closeModal('editStockModal')" class="close-button mt-2">Close</button>
-    </div>
+<div id="editStockModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-edit mr-2"></i>Edit Stock</h3>
+    <form id="editStockForm">
+      <input type="hidden" id="editProductName" value="">
+      <input type="hidden" id="editProductType" value="">
+      <input type="number" id="editQuantity" placeholder="Quantity" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+      <input type="number" id="editPricePerUnit" placeholder="Price per Unit" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+      <button type="submit" class="gray-button">Update Stock</button>
+    </form>
+    <button onclick="closeModal('editStockModal')" class="close-button mt-2">Close</button>
   </div>
+</div>
 
   <!-- Product Details Modal -->
   <div id="productDetailsModal" class="modal-overlay hidden">
@@ -801,24 +801,25 @@ updateTotalInvested();
     }
 
     // Fetch Stock
+// Fetch Stock
 async function fetchStock() {
-    const response = await fetch(`${backendUrl}/stock/`);
-    const data = await response.json();
-    const stockTableBody = document.getElementById('stockTableBody');
-    stockTableBody.innerHTML = data.stock.map(item => `
-        <tr>
-            <td>${item.product_name}</td>
-            <td>${item.quantity}</td>
-            <td>UGX ${(item.price_per_unit * item.quantity).toLocaleString()}</td>
-            <td class="actions">
-                <i class="fas fa-trash text-red-500 hover:text-red-700 cursor-pointer" onclick="deleteStockItem('${item.product_name}', '${item.product_type}')"></i>
-                <i class="fas fa-edit text-blue-500 hover:text-blue-700 cursor-pointer ml-2" onclick="editStockItem('${item.product_name}', '${item.product_type}', ${item.quantity}, ${item.price_per_unit})"></i>
-                <i class="fas fa-eye text-green-500 hover:text-green-700 cursor-pointer ml-2" onclick="viewStockItem('${item.product_name}', '${item.product_type}', ${item.quantity}, ${item.price_per_unit})"></i>
-            </td>
-        </tr>
-    `).join('');
+  const response = await fetch(`${backendUrl}/stock/`);
+  const data = await response.json();
+  const stockTableBody = document.getElementById('stockTableBody');
+  stockTableBody.innerHTML = data.stock.map(item => `
+    <tr>
+      <td>${item.product_name}</td>
+      <td>${item.quantity}</td>
+      <td>UGX ${(item.price_per_unit * item.quantity).toLocaleString()}</td>
+      <td class="actions">
+        <i class="fas fa-trash text-red-500 hover:text-red-700 cursor-pointer" onclick="deleteStockItem('${item.product_name}', '${item.product_type}')"></i>
+        <i class="fas fa-edit text-blue-500 hover:text-blue-700 cursor-pointer ml-2" onclick="editStockItem('${item.product_name}', '${item.product_type}', ${item.quantity}, ${item.price_per_unit})"></i>
+        <i class="fas fa-eye text-green-500 hover:text-green-700 cursor-pointer ml-2" onclick="viewStockItem('${item.product_name}', '${item.product_type}', ${item.quantity}, ${item.price_per_unit})"></i>
+      </td>
+    </tr>
+  `).join('');
 
-    updateTotalInvested(); // Update the total invested amount in the finance card
+  updateTotalInvested(); // Update the total invested amount in the finance card
 }
 
 
@@ -944,41 +945,42 @@ async function fetchStock() {
 
     // Edit Stock Item
     function editStockItem(productName, productType, quantity, pricePerUnit) {
-      openAddStockModal();
+  // Open the edit modal
+  document.getElementById('editStockModal').classList.remove('hidden');
 
-      const stockItemSelect = document.getElementById('stockItemSelect');
-      stockItemSelect.value = productName;
-      document.getElementById('defaultUnitPriceInput').value = pricePerUnit;
-      document.getElementById('addStockForm').querySelector('input[type="number"]').value = quantity;
-      document.getElementById('addStockForm').querySelectorAll('input[type="number"]')[1].value = pricePerUnit;
+  // Pre-fill the form with the selected stock item's data
+  document.getElementById('editProductName').value = productName;
+  document.getElementById('editProductType').value = productType;
+  document.getElementById('editQuantity').value = quantity;
+  document.getElementById('editPricePerUnit').value = pricePerUnit;
 
-      const form = document.getElementById('addStockForm');
-      form.onsubmit = async (e) => {
-        e.preventDefault();
-        const updatedQuantity = parseFloat(e.target[2].value);
-        const updatedPricePerUnit = parseFloat(e.target[3].value);
+  // Handle form submission
+  const form = document.getElementById('editStockForm');
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const updatedQuantity = parseFloat(document.getElementById('editQuantity').value);
+    const updatedPricePerUnit = parseFloat(document.getElementById('editPricePerUnit').value);
 
-        const response = await fetch(`${backendUrl}/stock/${productName}/${productType}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            quantity: updatedQuantity,
-            price_per_unit: updatedPricePerUnit,
-          }),
-        });
+    const response = await fetch(`${backendUrl}/stock/${productName}/${productType}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        quantity: updatedQuantity,
+        price_per_unit: updatedPricePerUnit,
+      }),
+    });
 
-        if (response.ok) {
-          alert(`${productName} (${productType}) updated successfully!`);
-          closeModal('addStockModal');
-          fetchStock();
-        } else {
-          alert('Failed to update stock item');
-        }
-      };
+    if (response.ok) {
+      alert(`${productName} (${productType}) updated successfully!`);
+      closeModal('editStockModal');
+      fetchStock(); // Refresh the stock table
+    } else {
+      alert('Failed to update stock item');
     }
-
+  };
+}
     // Edit Service
     function editService(name, description, price) {
       document.getElementById('addServiceModal').classList.remove('hidden');
