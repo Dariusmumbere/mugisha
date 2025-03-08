@@ -928,42 +928,43 @@ async function fetchStock() {
     }
 
     // Edit Stock Item
-    function editStockItem(productName, productType, quantity, pricePerUnit) {
-      openAddStockModal();
+function editStockItem(productName, productType, quantity, pricePerUnit) {
+  openAddStockModal(); // Open the "Add Stock" modal
 
-      const stockItemSelect = document.getElementById('stockItemSelect');
-      stockItemSelect.value = productName;
-      document.getElementById('defaultUnitPriceInput').value = pricePerUnit;
-      document.getElementById('addStockForm').querySelector('input[type="number"]').value = quantity;
-      document.getElementById('addStockForm').querySelectorAll('input[type="number"]')[1].value = pricePerUnit;
+  // Pre-fill the form fields with the existing stock item's details
+  const stockItemSelect = document.getElementById('stockItemSelect');
+  stockItemSelect.value = productName;
+  document.getElementById('defaultUnitPriceInput').value = pricePerUnit;
+  document.getElementById('addStockForm').querySelector('input[type="number"]').value = quantity;
+  document.getElementById('addStockForm').querySelectorAll('input[type="number"]')[1].value = pricePerUnit;
 
-      const form = document.getElementById('addStockForm');
-      form.onsubmit = async (e) => {
-        e.preventDefault();
-        const updatedQuantity = parseFloat(e.target[2].value);
-        const updatedPricePerUnit = parseFloat(e.target[3].value);
+  // Update the form submission handler to handle the edit operation
+  const form = document.getElementById('addStockForm');
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const updatedQuantity = parseFloat(e.target[2].value);
+    const updatedPricePerUnit = parseFloat(e.target[3].value);
 
-        const response = await fetch(`${backendUrl}/stock/${productName}/${productType}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            quantity: updatedQuantity,
-            price_per_unit: updatedPricePerUnit,
-          }),
-        });
+    const response = await fetch(`${backendUrl}/stock/${productName}/${productType}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        quantity: updatedQuantity,
+        price_per_unit: updatedPricePerUnit,
+      }),
+    });
 
-        if (response.ok) {
-          alert(`${productName} (${productType}) updated successfully!`);
-          closeModal('addStockModal');
-          fetchStock();
-        } else {
-          alert('Failed to update stock item');
-        }
-      };
+    if (response.ok) {
+      alert(`${productName} (${productType}) updated successfully!`);
+      closeModal('addStockModal');
+      fetchStock(); // Refresh the stock table
+    } else {
+      alert('Failed to update stock item');
     }
-
+  };
+}
     // Edit Service
     function editService(name, description, price) {
       document.getElementById('addServiceModal').classList.remove('hidden');
