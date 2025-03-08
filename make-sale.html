@@ -507,68 +507,67 @@
       document.getElementById(modalId).classList.add('hidden');
     }
 
-    // Generate Receipt
     async function generateReceipt() {
-      if (currentSale.length === 0) {
+    if (currentSale.length === 0) {
         alert('No items in the sale!');
         return;
-      }
+    }
 
-      if (!selectedClient) {
+    if (!selectedClient) {
         alert('Please select a client before generating the receipt.');
         return;
-      }
+    }
 
-      const total = currentSale.reduce((sum, item) => sum + item.total, 0);
+    const total = currentSale.reduce((sum, item) => sum + item.total, 0);
 
-      // Prepare the sale data
-      const saleData = {
+    // Prepare the sale data
+    const saleData = {
         client_name: selectedClient.name,
         items: currentSale.map(item => ({
-          name: item.itemName,
-          quantity: item.quantity,
-          unit_price: item.unitPrice,
-          total: item.total,
+            name: item.itemName,
+            quantity: item.quantity,
+            unit_price: item.unitPrice,
+            total: item.total,
         })),
         total_amount: total,
-      };
+    };
 
-      // Send the sale data to the backend
-      try {
+    // Send the sale data to the backend
+    try {
         const response = await fetch(`${backendUrl}/sales/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(saleData),
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(saleData),
         });
 
         if (response.ok) {
-          alert('Sale created and bank account updated successfully!');
+            alert('Sale created and stock updated successfully!');
 
-          // Generate the receipt PDF
-          const doc = new jsPDF();
-          doc.text('Receipt', 10, 10);
-          doc.text(`Client: ${selectedClient.name}`, 10, 20);
-          doc.text('Items:', 10, 30);
-          currentSale.forEach((item, index) => {
-            doc.text(`${item.itemName} - ${item.quantity} x ${item.unitPrice.toFixed(2)} = ${item.total.toFixed(2)}`, 10, 40 + (index * 10));
-          });
-          doc.text(`Total: ${total.toFixed(2)}`, 10, 40 + (currentSale.length * 10));
-          doc.save('receipt.pdf');
+            // Generate the receipt PDF
+            const doc = new jsPDF();
+            doc.text('Receipt', 10, 10);
+            doc.text(`Client: ${selectedClient.name}`, 10, 20);
+            doc.text('Items:', 10, 30);
+            currentSale.forEach((item, index) => {
+                doc.text(`${item.itemName} - ${item.quantity} x ${item.unitPrice.toFixed(2)} = ${item.total.toFixed(2)}`, 10, 40 + (index * 10));
+            });
+            doc.text(`Total: ${total.toFixed(2)}`, 10, 40 + (currentSale.length * 10));
+            doc.save('receipt.pdf');
 
-          // Clear the current sale
-          currentSale = [];
-          updateSaleTable();
-          fetchSalesHistory(); // Refresh sales history
+            // Clear the current sale
+            currentSale = [];
+            updateSaleTable();
+            fetchSalesHistory(); // Refresh sales history
         } else {
-          alert('Failed to create sale.');
+            alert('Failed to create sale.');
         }
-      } catch (error) {
+    } catch (error) {
         console.error('Error creating sale:', error);
         alert('Failed to create sale.');
-      }
     }
+}
 
     // Fetch Sales History
     async function fetchSalesHistory() {
