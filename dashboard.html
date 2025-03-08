@@ -945,6 +945,7 @@ function editStockItem(productName, productType, quantity, pricePerUnit) {
     const updatedQuantity = parseFloat(e.target[2].value);
     const updatedPricePerUnit = parseFloat(e.target[3].value);
 
+    // Send a PUT request to update the stock item
     const response = await fetch(`${backendUrl}/stock/${productName}/${productType}`, {
       method: 'PUT',
       headers: {
