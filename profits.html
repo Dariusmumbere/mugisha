@@ -6,6 +6,7 @@
   <title>Profits - Ndyakurungi ITECH</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     .overview {
       font-size: 34px;
@@ -13,13 +14,20 @@
       background-color: rgb(19, 19, 71);
       margin-bottom: 15px;
       color: white;
+      padding: 10px;
+      border-radius: 8px;
     }
     .profit-card {
       background-color: white;
       padding: 20px;
-      border-radius: 8px;
+      border-radius: 12px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       margin-bottom: 20px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .profit-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
     }
     .dark .profit-card {
       background-color: #1f2937;
@@ -47,6 +55,10 @@
       background-color: #1f2937;
       color: #f9fafb;
     }
+    .chart-container {
+      max-width: 400px;
+      margin: 0 auto;
+    }
   </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900">
@@ -72,9 +84,9 @@
   <div class="container mx-auto p-8">
     <h1 class="overview">Profit Management</h1>
 
-    <!-- Profit Calculation Section -->
+    <!-- Profit Summary Section -->
     <div class="profit-card">
-      <h2 class="text-xl font-semibold mb-4 dark:text-white"><i class="fas fa-calculator mr-2"></i>Profit Calculation</h2>
+      <h2 class="text-xl font-semibold mb-4 dark:text-white"><i class="fas fa-chart-line mr-2"></i>Profit Summary</h2>
       <table class="profit-table">
         <thead>
           <tr>
@@ -84,20 +96,24 @@
         </thead>
         <tbody>
           <tr>
-            <td>Total Sales</td>
-            <td id="totalSales">0.00</td>
+            <td>Total Sales Revenue</td>
+            <td id="totalSalesRevenue">0.00</td>
+          </tr>
+          <tr>
+            <td>Total Cost of Goods Sold</td>
+            <td id="totalCostOfGoodsSold">0.00</td>
+          </tr>
+          <tr>
+            <td>Total Profit from Sales</td>
+            <td id="totalProfitFromSales">0.00</td>
           </tr>
           <tr>
             <td>Total Expenses</td>
             <td id="totalExpenses">0.00</td>
           </tr>
           <tr>
-            <td>Gross Profit</td>
-            <td id="grossProfit">0.00</td>
-          </tr>
-          <tr>
-            <td>Net Profit</td>
-            <td id="netProfit">0.00</td>
+            <td><strong>Net Profit</strong></td>
+            <td id="netProfit"><strong>0.00</strong></td>
           </tr>
         </tbody>
       </table>
@@ -106,7 +122,29 @@
     <!-- Profit Breakdown Section -->
     <div class="profit-card">
       <h2 class="text-xl font-semibold mb-4 dark:text-white"><i class="fas fa-chart-pie mr-2"></i>Profit Breakdown</h2>
-      <canvas id="profitPieChart"></canvas>
+      <div class="chart-container">
+        <canvas id="profitPieChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Detailed Profit Table -->
+    <div class="profit-card">
+      <h2 class="text-xl font-semibold mb-4 dark:text-white"><i class="fas fa-table mr-2"></i>Detailed Profit by Sale</h2>
+      <table class="profit-table">
+        <thead>
+          <tr>
+            <th>Sale ID</th>
+            <th>Date</th>
+            <th>Client</th>
+            <th>Total Revenue</th>
+            <th>Total Cost</th>
+            <th>Profit</th>
+          </tr>
+        </thead>
+        <tbody id="detailedProfitTableBody">
+          <!-- Rows will be dynamically added here -->
+        </tbody>
+      </table>
     </div>
   </div>
 
@@ -117,49 +155,98 @@
     // Fetch and Display Profit Data
     async function fetchProfitData() {
       try {
-        // Fetch total sales
+        // Fetch sales data
         const salesResponse = await fetch(`${backendUrl}/sales/`);
         const salesData = await salesResponse.json();
-        const totalSales = salesData.sales.reduce((sum, sale) => sum + sale.total_amount, 0);
 
-        // Fetch total expenses
+        // Fetch expenses data
         const expensesResponse = await fetch(`${backendUrl}/expenses/`);
         const expensesData = await expensesResponse.json();
+
+        // Calculate total sales revenue, cost of goods sold, and profit
+        let totalSalesRevenue = 0;
+        let totalCostOfGoodsSold = 0;
+        let totalProfitFromSales = 0;
+
+        const detailedProfitRows = salesData.sales.map(sale => {
+          const saleRevenue = sale.total_amount;
+          const saleCost = sale.items.reduce((sum, item) => {
+            if (item.type === "product") {
+              return sum + (item.quantity * item.unit_price * 0.7); // Assuming 30% profit margin
+            }
+            return sum;
+          }, 0);
+          const saleProfit = saleRevenue - saleCost;
+
+          totalSalesRevenue += saleRevenue;
+          totalCostOfGoodsSold += saleCost;
+          totalProfitFromSales += saleProfit;
+
+          return `
+            <tr>
+              <td>${sale.id}</td>
+              <td>${new Date(sale.created_at).toLocaleDateString()}</td>
+              <td>${sale.client_name}</td>
+              <td>${saleRevenue.toFixed(2)}</td>
+              <td>${saleCost.toFixed(2)}</td>
+              <td>${saleProfit.toFixed(2)}</td>
+            </tr>
+          `;
+        }).join('');
+
+        // Calculate total expenses
         const totalExpenses = expensesData.expenses.reduce((sum, expense) => sum + expense.total, 0);
 
-        // Calculate gross and net profit
-        const grossProfit = totalSales - totalExpenses;
-        const netProfit = grossProfit; // Assuming no additional deductions
+        // Calculate net profit
+        const netProfit = totalProfitFromSales - totalExpenses;
 
-        // Update the table
-        document.getElementById('totalSales').textContent = totalSales.toFixed(2);
+        // Update the summary table
+        document.getElementById('totalSalesRevenue').textContent = totalSalesRevenue.toFixed(2);
+        document.getElementById('totalCostOfGoodsSold').textContent = totalCostOfGoodsSold.toFixed(2);
+        document.getElementById('totalProfitFromSales').textContent = totalProfitFromSales.toFixed(2);
         document.getElementById('totalExpenses').textContent = totalExpenses.toFixed(2);
-        document.getElementById('grossProfit').textContent = grossProfit.toFixed(2);
         document.getElementById('netProfit').textContent = netProfit.toFixed(2);
 
+        // Update the detailed profit table
+        document.getElementById('detailedProfitTableBody').innerHTML = detailedProfitRows;
+
         // Update the pie chart
-        updateProfitPieChart(totalSales, totalExpenses);
+        updateProfitPieChart(totalProfitFromSales, totalExpenses);
       } catch (error) {
         console.error('Error fetching profit data:', error);
       }
     }
 
     // Update Profit Pie Chart
-    function updateProfitPieChart(totalSales, totalExpenses) {
+    function updateProfitPieChart(totalProfitFromSales, totalExpenses) {
       const ctx = document.getElementById('profitPieChart').getContext('2d');
       new Chart(ctx, {
         type: 'pie',
         data: {
-          labels: ['Total Sales', 'Total Expenses'],
+          labels: ['Profit from Sales', 'Expenses'],
           datasets: [{
-            data: [totalSales, totalExpenses],
+            data: [totalProfitFromSales, totalExpenses],
             backgroundColor: ['#4CAF50', '#F44336'],
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-        }
+          plugins: {
+            legend: {
+              position: 'bottom',
+            },
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const label = context.label || '';
+                  const value = context.raw || 0;
+                  return `${label}: UGX ${value.toFixed(2)}`;
+                },
+              },
+            },
+          },
+        },
       });
     }
 
