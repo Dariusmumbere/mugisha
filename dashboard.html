@@ -4,9 +4,13 @@
   <style>
     /* Existing CSS styles */
     /* Add these styles to your existing CSS */
+    
 .modal-content {
+  position: relative;
   max-height: 80vh; /* Limit the height of the modal */
   overflow-y: auto; /* Enable vertical scrolling */
+  padding-bottom: 80px;
+  
 }
 
 .stock-table, .service-table {
@@ -242,6 +246,26 @@
       padding: 8px;
       margin-top: 8px;
     }
+    .close-button {
+  position: absolute; /* Fix the close button position */
+  bottom: 20px; /* Distance from the bottom */
+  right: 20px; /* Distance from the right */
+  background-color: #ef4444;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  text-align: center;
+  display: inline-block;
+  width: auto;
+  margin: 5px;
+  border: 1px solid black;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1000; /* Ensure the button stays on top of other content */
+}
+
+.close-button:hover {
+  background-color: #dc2626;
+}
   </style>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
