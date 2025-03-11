@@ -59,6 +59,11 @@
       max-width: 400px;
       margin: 0 auto;
     }
+    .scrollable-table {
+      max-height: 300px;
+      overflow-y: auto;
+      display: block;
+    }
   </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900">
@@ -130,21 +135,23 @@
     <!-- Detailed Profit Table -->
     <div class="profit-card">
       <h2 class="text-xl font-semibold mb-4 dark:text-white"><i class="fas fa-table mr-2"></i>Detailed Profit by Sale</h2>
-      <table class="profit-table">
-        <thead>
-          <tr>
-            <th>Sale ID</th>
-            <th>Date</th>
-            <th>Client</th>
-            <th>Total Revenue</th>
-            <th>Total Cost</th>
-            <th>Profit</th>
-          </tr>
-        </thead>
-        <tbody id="detailedProfitTableBody">
-          <!-- Rows will be dynamically added here -->
-        </tbody>
-      </table>
+      <div class="scrollable-table">
+        <table class="profit-table">
+          <thead>
+            <tr>
+              <th>Sale ID</th>
+              <th>Date</th>
+              <th>Client</th>
+              <th>Total Revenue</th>
+              <th>Total Cost</th>
+              <th>Profit</th>
+            </tr>
+          </thead>
+          <tbody id="detailedProfitTableBody">
+            <!-- Rows will be dynamically added here -->
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -187,7 +194,9 @@
               }
             } else if (item.type === "service") {
               // Profit for services is 30% of the selling price
-              saleProfit += item.unit_price * item.quantity * 0.3;
+              const serviceProfit = item.unit_price * item.quantity * 0.3;
+              saleProfit += serviceProfit;
+              saleCost += (item.unit_price * item.quantity) - serviceProfit; // Cost = Revenue - Profit
             }
           });
 
