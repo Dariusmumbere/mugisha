@@ -247,6 +247,25 @@
       padding: 8px;
       margin-top: 8px;
     }
+    /* Add these styles to your existing CSS */
+.gray-button {
+  background-color: #6b7280;
+  color: white;
+  padding: 6px 12px; /* Reduced padding */
+  border-radius: 5px;
+  text-align: center;
+  display: inline-block;
+  width: auto;
+  margin: 5px;
+  border: 1px solid black;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  font-size: 12px; /* Reduced font size */
+  font-weight: 500; /* Slightly bolder text */
+}
+
+.gray-button:hover {
+  background-color: #4b5563;
+}
 
   </style>
   <meta charset="UTF-8">
@@ -325,7 +344,7 @@
     <div class="amount-box dark:text-white">0</div>
     <button onclick="openDepositModal()" class="gray-button">Deposit</button>
     <button onclick="openWithdrawModal()" class="gray-button">Withdraw</button>
-    <button onclick="openTransactionHistoryModal()" class="gray-button">View Transaction History</button>
+    <button onclick="openTransactionHistoryModal()" class="gray-button">Transaction History</button>
   </div>
   <div class="finance-item">
     <h3 class="text-lg font-semibold dark:text-white"><i class="fas fa-chart-line mr-2"></i>Total Investment</h3>
