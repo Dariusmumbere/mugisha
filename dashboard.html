@@ -3,6 +3,46 @@
 <head>
   <style>
     /* Existing CSS styles */
+    /* Add these styles to your existing CSS */
+.modal-content {
+  max-height: 80vh; /* Limit the height of the modal */
+  overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.stock-table, .service-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.stock-table th, .stock-table td, .service-table th, .service-table td {
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.stock-table th, .service-table th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #374151;
+}
+
+.stock-table tr:hover, .service-table tr:hover {
+  background-color: #f3f4f6;
+}
+
+.dark .stock-table th, .dark .stock-table td, .dark .service-table th, .dark .service-table td {
+  border-color: #374151;
+}
+
+.dark .stock-table th, .dark .service-table th {
+  background-color: #1f2937;
+  color: #f9fafb;
+}
+
+.dark .stock-table tr:hover, .dark .service-table tr:hover {
+  background-color: #374151;
+}
     .overview {
       font-size: 34px;
       text-align: center;
@@ -402,27 +442,27 @@
 
   <!-- Stock Management Modal -->
   <div id="stockManagementModal" class="modal-overlay hidden">
-    <div class="modal-content">
-      <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-boxes mr-2"></i>Manage Stock</h3>
-      <table class="stock-table">
-        <thead>
-          <tr>
-            <th>Product Name</th>
-            <th>Available Quantity</th>
-            <th>Total Invested</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="stockTableBody">
-          <!-- Stock items will be dynamically added here -->
-        </tbody>
-      </table>
-      <button onclick="openAddStockModal()" class="gray-button mt-4">
-        <i class="fas fa-plus mr-2"></i>Add New Quantity
-      </button>
-      <button onclick="closeModal('stockManagementModal')" class="close-button">Close</button>
-    </div>
+  <div class="modal-content">
+    <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-boxes mr-2"></i>Manage Stock</h3>
+    <table class="stock-table">
+      <thead>
+        <tr>
+          <th>Product Name</th>
+          <th>Available Quantity</th>
+          <th>Total Invested</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="stockTableBody">
+        <!-- Stock items will be dynamically added here -->
+      </tbody>
+    </table>
+    <button onclick="openAddStockModal()" class="gray-button mt-4">
+      <i class="fas fa-plus mr-2"></i>Add New Quantity
+    </button>
+    <button onclick="closeModal('stockManagementModal')" class="close-button">Close</button>
   </div>
+</div>
 
   <!-- Add Stock Modal -->
   <div id="addStockModal" class="modal-overlay hidden">
@@ -499,24 +539,25 @@
 
   <!-- Service Management Modal -->
   <div id="serviceManagementModal" class="modal-overlay hidden">
-    <div class="modal-content">
-      <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-cogs mr-2"></i>Manage Services</h3>
-      <table class="stock-table">
-        <thead>
-          <tr>
-            <th>Service Name</th>
-            <th>Description</th>
-            <th>Price</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="serviceTableBody">
-          <!-- Services will be dynamically added here -->
-        </tbody>
-      </table>
-      <button onclick="closeModal('serviceManagementModal')" class="close-button">Close</button>
-    </div>
+  <div class="modal-content">
+    <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-cogs mr-2"></i>Manage Services</h3>
+    <table class="service-table">
+      <thead>
+        <tr>
+          <th>Service Name</th>
+          <th>Description</th>
+          <th>Price</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="serviceTableBody">
+        <!-- Services will be dynamically added here -->
+      </tbody>
+    </table>
+    <button onclick="closeModal('serviceManagementModal')" class="close-button">Close</button>
   </div>
+</div>
+  
 <!-- Deposit Modal -->
   <div id="depositModal" class="modal-overlay hidden">
     <div class="modal-content">
@@ -645,9 +686,9 @@
 
     // Open Stock Management Modal
     function openStockManagementModal() {
-      document.getElementById('stockManagementModal').classList.remove('hidden');
-      fetchStock();
-    }
+  document.getElementById('stockManagementModal').classList.remove('hidden');
+  fetchStock();
+}
 
     // Open Add Stock Modal
     function openAddStockModal() {
@@ -673,9 +714,9 @@
 
     // Open Service Management Modal
     function openServiceManagementModal() {
-      document.getElementById('serviceManagementModal').classList.remove('hidden');
-      fetchServices();
-    }
+  document.getElementById('serviceManagementModal').classList.remove('hidden');
+  fetchServices();
+}
 
     // Close Modals
     function closeModal(modalId) {
@@ -814,7 +855,6 @@ updateTotalInvested();
     }
 
     // Fetch Stock
-// Fetch Stock
 async function fetchStock() {
   const response = await fetch(`${backendUrl}/stock/`);
   const data = await response.json();
@@ -835,39 +875,25 @@ async function fetchStock() {
   updateTotalInvested(); // Update the total invested amount in the finance card
 }
 
+// Fetch Services
+async function fetchServices() {
+  const response = await fetch(`${backendUrl}/services/`);
+  const data = await response.json();
+  const serviceTableBody = document.getElementById('serviceTableBody');
 
-    // Fetch Services
-    async function fetchServices() {
-      const response = await fetch(`${backendUrl}/services/`);
-      const data = await response.json();
-      const serviceList = document.getElementById('serviceList');
-      const serviceTableBody = document.getElementById('serviceTableBody');
-
-      serviceList.innerHTML = data.services.map(service => `
-        <div class="p-2 bg-gray-200 dark:bg-gray-600 rounded dark:text-white">
-          <span>${service.name}</span>
-          <div class="actions">
-            <i class="fas fa-trash text-red-500" onclick="deleteService('${service.name}')"></i>
-            <i class="fas fa-edit text-blue-500" onclick="editService('${service.name}', '${service.description}', ${service.price})"></i>
-            <i class="fas fa-eye text-green-500" onclick="viewService('${service.name}', '${service.description}', ${service.price})"></i>
-          </div>
-        </div>
-      `).join('');
-
-      serviceTableBody.innerHTML = data.services.map(service => `
-        <tr>
-          <td>${service.name}</td>
-          <td>${service.description}</td>
-          <td>${service.price}</td>
-          <td class="actions">
-            <i class="fas fa-trash text-red-500 hover:text-red-700 cursor-pointer" onclick="deleteService('${service.name}')"></i>
-            <i class="fas fa-edit text-blue-500 hover:text-blue-700 cursor-pointer ml-2" onclick="editService('${service.name}', '${service.description}', ${service.price})"></i>
-            <i class="fas fa-eye text-green-500 hover:text-green-700 cursor-pointer ml-2" onclick="viewService('${service.name}', '${service.description}', ${service.price})"></i>
-          </td>
-        </tr>
-      `).join('');
-    }
-
+  serviceTableBody.innerHTML = data.services.map(service => `
+    <tr>
+      <td>${service.name}</td>
+      <td>${service.description}</td>
+      <td>${service.price}</td>
+      <td class="actions">
+        <i class="fas fa-trash text-red-500 hover:text-red-700 cursor-pointer" onclick="deleteService('${service.name}')"></i>
+        <i class="fas fa-edit text-blue-500 hover:text-blue-700 cursor-pointer ml-2" onclick="editService('${service.name}', '${service.description}', ${service.price})"></i>
+        <i class="fas fa-eye text-green-500 hover:text-green-700 cursor-pointer ml-2" onclick="viewService('${service.name}', '${service.description}', ${service.price})"></i>
+      </td>
+    </tr>
+  `).join('');
+}
     // Delete Product
     async function deleteProduct(productName, productType) {
       if (confirm(`Are you sure you want to delete ${productName} (${productType})?`)) {
