@@ -163,6 +163,10 @@
         const expensesResponse = await fetch(`${backendUrl}/expenses/`);
         const expensesData = await expensesResponse.json();
 
+        // Fetch products data to get buying prices
+        const productsResponse = await fetch(`${backendUrl}/products/`);
+        const productsData = await productsResponse.json();
+
         // Calculate total sales revenue, cost of goods sold, and profit
         let totalSalesRevenue = 0;
         let totalCostOfGoodsSold = 0;
@@ -170,13 +174,22 @@
 
         const detailedProfitRows = salesData.sales.map(sale => {
           const saleRevenue = sale.total_amount;
-          const saleCost = sale.items.reduce((sum, item) => {
+          let saleCost = 0;
+          let saleProfit = 0;
+
+          sale.items.forEach(item => {
             if (item.type === "product") {
-              return sum + (item.quantity * item.unit_price * 0.7); // Assuming 30% profit margin
+              // Find the product's buying price
+              const product = productsData.products.find(p => p.name === item.name);
+              if (product) {
+                saleCost += item.quantity * product.buying_price;
+                saleProfit += (item.unit_price - product.buying_price) * item.quantity;
+              }
+            } else if (item.type === "service") {
+              // Profit for services is 30% of the selling price
+              saleProfit += item.unit_price * item.quantity * 0.3;
             }
-            return sum;
-          }, 0);
-          const saleProfit = saleRevenue - saleCost;
+          });
 
           totalSalesRevenue += saleRevenue;
           totalCostOfGoodsSold += saleCost;
