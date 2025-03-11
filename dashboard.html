@@ -876,24 +876,37 @@ async function fetchStock() {
 }
 
 // Fetch Services
-async function fetchServices() {
-  const response = await fetch(`${backendUrl}/services/`);
-  const data = await response.json();
-  const serviceTableBody = document.getElementById('serviceTableBody');
+ async function fetchServices() {
+      const response = await fetch(`${backendUrl}/services/`);
+      const data = await response.json();
+      const serviceList = document.getElementById('serviceList');
+      const serviceTableBody = document.getElementById('serviceTableBody');
 
-  serviceTableBody.innerHTML = data.services.map(service => `
-    <tr>
-      <td>${service.name}</td>
-      <td>${service.description}</td>
-      <td>${service.price}</td>
-      <td class="actions">
-        <i class="fas fa-trash text-red-500 hover:text-red-700 cursor-pointer" onclick="deleteService('${service.name}')"></i>
-        <i class="fas fa-edit text-blue-500 hover:text-blue-700 cursor-pointer ml-2" onclick="editService('${service.name}', '${service.description}', ${service.price})"></i>
-        <i class="fas fa-eye text-green-500 hover:text-green-700 cursor-pointer ml-2" onclick="viewService('${service.name}', '${service.description}', ${service.price})"></i>
-      </td>
-    </tr>
-  `).join('');
-}
+      serviceList.innerHTML = data.services.map(service => `
+        <div class="p-2 bg-gray-200 dark:bg-gray-600 rounded dark:text-white">
+          <span>${service.name}</span>
+          <div class="actions">
+            <i class="fas fa-trash text-red-500" onclick="deleteService('${service.name}')"></i>
+            <i class="fas fa-edit text-blue-500" onclick="editService('${service.name}', '${service.description}', ${service.price})"></i>
+            <i class="fas fa-eye text-green-500" onclick="viewService('${service.name}', '${service.description}', ${service.price})"></i>
+          </div>
+        </div>
+      `).join('');
+
+      serviceTableBody.innerHTML = data.services.map(service => `
+        <tr>
+          <td>${service.name}</td>
+          <td>${service.description}</td>
+          <td>${service.price}</td>
+          <td class="actions">
+            <i class="fas fa-trash text-red-500 hover:text-red-700 cursor-pointer" onclick="deleteService('${service.name}')"></i>
+            <i class="fas fa-edit text-blue-500 hover:text-blue-700 cursor-pointer ml-2" onclick="editService('${service.name}', '${service.description}', ${service.price})"></i>
+            <i class="fas fa-eye text-green-500 hover:text-green-700 cursor-pointer ml-2" onclick="viewService('${service.name}', '${service.description}', ${service.price})"></i>
+          </td>
+        </tr>
+      `).join('');
+    }
+
     // Delete Product
     async function deleteProduct(productName, productType) {
       if (confirm(`Are you sure you want to delete ${productName} (${productType})?`)) {
