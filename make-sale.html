@@ -525,6 +525,7 @@
         client_name: selectedClient.name,
         items: currentSale.map(item => ({
             name: item.itemName,
+            type: item.type || "product", // Default to "product" if type is not set
             quantity: item.quantity,
             unit_price: item.unitPrice,
             total: item.total,
@@ -568,7 +569,6 @@
         alert('Failed to create sale.');
     }
 }
-
     // Fetch Sales History
     async function fetchSalesHistory() {
       try {
@@ -631,24 +631,24 @@ async function openSelectServiceModal() {
 
 // Add Service to Sale
 document.getElementById('selectServiceForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const serviceName = document.getElementById('serviceSelect').value;
-  const quantity = parseFloat(document.getElementById('serviceQuantity').value);
+    e.preventDefault();
+    const serviceName = document.getElementById('serviceSelect').value;
+    const quantity = parseFloat(document.getElementById('serviceQuantity').value);
 
-  // Get the selected service's price
-  const serviceSelect = document.getElementById('serviceSelect');
-  const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
-  const unitPrice = parseFloat(selectedOption.getAttribute('data-price'));
+    // Get the selected service's price
+    const serviceSelect = document.getElementById('serviceSelect');
+    const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+    const unitPrice = parseFloat(selectedOption.getAttribute('data-price'));
 
-  if (!serviceName || !quantity || isNaN(unitPrice)) {
-    alert('Please select a service and enter a valid quantity.');
-    return;
-  }
+    if (!serviceName || !quantity || isNaN(unitPrice)) {
+        alert('Please select a service and enter a valid quantity.');
+        return;
+    }
 
-  const total = unitPrice * quantity;
-  currentSale.push({ itemName: serviceName, quantity, unitPrice, total });
-  updateSaleTable();
-  closeModal('selectServiceModal');
+    const total = unitPrice * quantity;
+    currentSale.push({ itemName: serviceName, type: "service", quantity, unitPrice, total });
+    updateSaleTable();
+    closeModal('selectServiceModal');
 });
     // Edit Sale
 async function editSale(saleId) {
