@@ -266,22 +266,28 @@
 .gray-button:hover {
   background-color: #4b5563;
 }
-    /* Notification dropdown */
+   /* Notification dropdown container */
 .notification-dropdown {
   position: relative;
   display: inline-block;
 }
 
-/* Notification button */
-.notification-button {
-  background-color: transparent;
-  border: none;
+/* Notification icon and text */
+.action-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   cursor: pointer;
-  position: relative;
-  padding: 10px;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
 }
 
-/* Red badge for unread notifications */
+.action-item:hover {
+  background-color: #f3f4f6; /* Light gray background on hover */
+}
+
+/* Notification badge (red circle) */
 .notification-badge {
   background-color: red;
   color: white;
@@ -289,15 +295,16 @@
   padding: 2px 6px;
   font-size: 12px;
   position: absolute;
-  top: 0;
-  right: 0;
+  top: -5px;
+  right: -5px;
   display: none; /* Hidden by default */
 }
 
-/* Notification list */
+/* Notification list (dropdown) */
 .notification-list {
   position: absolute;
   right: 0;
+  top: 40px; /* Position below the notification icon */
   background-color: white;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -387,21 +394,19 @@
   </header>
 
   <!-- Horizontal Quick Actions -->
-  <div class="notification-dropdown">
-  <button onclick="toggleNotifications()" class="notification-button">
+ 
+  <div class="quick-actions">
+    <div class="notification-dropdown">
+  <div class="action-item" onclick="toggleNotifications()">
     <i class="fas fa-bell"></i>
-    <span id="notification-count" class="notification-badge">0</span>
-  </button>
+    <span class="notification-badge" id="notification-count">0</span>
+    <span class="default-text">Notifications</span>
+    <span class="hover-text">Show Notifications</span>
+  </div>
   <div id="notification-list" class="notification-list hidden">
     <!-- Notifications will be dynamically added here -->
   </div>
 </div>
-  <div class="quick-actions">
-    <div class="action-item">
-      <i class="fas fa-bell"></i>
-      <span class="default-text">Notifications</span>
-      <span class="hover-text">Show Notifications</span>
-    </div>
     <div class="action-item" onclick="openInvoiceModal()">
     <i class="fas fa-file-invoice"></i>
     <span class="default-text">Invoice</span>
@@ -1694,8 +1699,8 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Error fetching transactions:', error);
       }
     }
-    // Fetch notifications
-async function fetchNotifications() {
+
+    async function fetchNotifications() {
   try {
     // Fetch all notifications
     const response = await fetch(`${backendUrl}/notifications/`);
@@ -1759,6 +1764,8 @@ setInterval(fetchNotifications, 10000);
 
 // Fetch notifications on page load
 document.addEventListener('DOMContentLoaded', fetchNotifications);
+    
+    
     // Fetch and Display Sales Analysis (Last 6 Months)
 
 
