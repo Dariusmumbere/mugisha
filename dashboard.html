@@ -266,6 +266,29 @@
 .gray-button:hover {
   background-color: #4b5563;
 }
+    .finance-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px; /* Adjust the gap between buttons as needed */
+  margin-top: 16px; /* Add some space above the buttons */
+}
+
+.gray-button {
+  background-color: #6b7280;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  text-align: center;
+  display: inline-block;
+  width: auto;
+  margin: 5px;
+  border: 1px solid black;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.gray-button:hover {
+  background-color: #4b5563;
+}
 
   </style>
   <meta charset="UTF-8">
@@ -339,30 +362,33 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
       <!-- Finance Card -->
       <div class="finance-card bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
-        <div class="finance-item">
-          <h3 class="text-lg font-semibold dark:text-white"><i class="fas fa-wallet mr-2"></i>Bank Account</h3>
-          <div class="amount-box dark:text-white">0</div>
-          <button onclick="openDepositModal()" class="gray-button">Deposit</button>
-          <button onclick="openWithdrawModal()" class="gray-button">Withdraw</button>
-          <button onclick="openTransactionHistoryModal()" class="gray-button">Transaction History</button>
-        </div>
-        <div class="finance-item">
-          <h3 class="text-lg font-semibold dark:text-white"><i class="fas fa-chart-line mr-2"></i>Total Investment</h3>
-          <div class="amount-box dark:text-white">0</div>
-        </div>
-        <div class="finance-item">
-          <h3 class="text-lg font-semibold dark:text-white"><i class="fas fa-boxes mr-2"></i>Amount in Stock</h3>
-          <div class="amount-box dark:text-white">0</div>
-        </div>
-        <div class="finance-item">
-          <h3 class="text-lg font-semibold dark:text-white">
-            <a href="profits.html" class="hover:underline">
-              <i class="fas fa-coins mr-2"></i>Net Profit value
-            </a>
-          </h3>
-          <div class="amount-box dark:text-white" id="netProfitAmount">0</div>
-        </div>
-      </div>
+  <div class="finance-item">
+    <h3 class="text-lg font-semibold dark:text-white"><i class="fas fa-wallet mr-2"></i>Bank Account</h3>
+    <div class="amount-box dark:text-white">0</div>
+  </div>
+  <div class="finance-item">
+    <h3 class="text-lg font-semibold dark:text-white"><i class="fas fa-chart-line mr-2"></i>Total Investment</h3>
+    <div class="amount-box dark:text-white">0</div>
+  </div>
+  <div class="finance-item">
+    <h3 class="text-lg font-semibold dark:text-white"><i class="fas fa-boxes mr-2"></i>Amount in Stock</h3>
+    <div class="amount-box dark:text-white">0</div>
+  </div>
+  <div class="finance-item">
+    <h3 class="text-lg font-semibold dark:text-white">
+      <a href="profits.html" class="hover:underline">
+        <i class="fas fa-coins mr-2"></i>Net Profit value
+      </a>
+    </h3>
+    <div class="amount-box dark:text-white" id="netProfitAmount">0</div>
+  </div>
+  <!-- Deposit, Withdraw, and Transaction History Buttons -->
+  <div class="finance-buttons flex justify-between mt-4">
+    <button onclick="openDepositModal()" class="gray-button">Deposit</button>
+    <button onclick="openWithdrawModal()" class="gray-button">Withdraw</button>
+    <button onclick="openTransactionHistoryModal()" class="gray-button">Transaction History</button>
+  </div>
+</div>
       <!-- Transaction History Modal -->
 <div id="transactionHistoryModal" class="modal-overlay hidden">
   <div class="modal-content">
