@@ -695,21 +695,35 @@
   </div>
 </div>
 
-    <!-- Invoice Modal -->
+   <!-- Invoice Modal -->
 <div id="invoiceModal" class="modal-overlay hidden">
   <div class="modal-content">
     <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-file-invoice mr-2"></i>Create Invoice</h3>
     <form id="invoiceForm" class="space-y-4">
-      <input type="text" placeholder="Your Company Name" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
-      <input type="text" placeholder="Address" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
-      <input type="text" placeholder="Phone" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
-      <input type="text" placeholder="Purchase Order Number" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      <div class="grid grid-cols-2 gap-4">
+        <input type="text" placeholder="Your Company Name" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+        <input type="text" placeholder="Address" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <input type="text" placeholder="Phone" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+        <input type="text" placeholder="Purchase Order Number" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      </div>
       <input type="date" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      <div id="invoiceItems" class="space-y-2">
+        <div class="grid grid-cols-4 gap-2">
+          <input type="text" placeholder="Item Description" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+          <input type="number" placeholder="Quantity" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+          <input type="number" placeholder="Unit Price" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+          <input type="number" placeholder="Total" class="p-2 border rounded dark:bg-gray-700 dark:text-white" readonly>
+        </div>
+      </div>
+      <button type="button" onclick="addInvoiceItem()" class="gray-button">Add Item</button>
       <button type="submit" class="gray-button w-full">Generate Invoice PDF</button>
     </form>
     <button onclick="closeModal('invoiceModal')" class="close-button">Close</button>
   </div>
 </div>
+
     
   <!-- JavaScript -->
   <script>
@@ -717,6 +731,19 @@
 
     function openInvoiceModal() {
     document.getElementById('invoiceModal').classList.remove('hidden');
+  }
+
+  function addInvoiceItem() {
+    const invoiceItems = document.getElementById('invoiceItems');
+    const newItem = document.createElement('div');
+    newItem.classList.add('grid', 'grid-cols-4', 'gap-2');
+    newItem.innerHTML = `
+      <input type="text" placeholder="Item Description" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      <input type="number" placeholder="Quantity" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      <input type="number" placeholder="Unit Price" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      <input type="number" placeholder="Total" class="p-2 border rounded dark:bg-gray-700 dark:text-white" readonly>
+    `;
+    invoiceItems.appendChild(newItem);
   }
 
   document.getElementById('invoiceForm').addEventListener('submit', async (e) => {
@@ -727,37 +754,55 @@
     const purchaseOrderNumber = e.target[3].value;
     const date = e.target[4].value;
 
+    const items = [];
+    const itemRows = document.querySelectorAll('#invoiceItems .grid');
+    itemRows.forEach(row => {
+      const description = row.children[0].value;
+      const quantity = row.children[1].value;
+      const unitPrice = row.children[2].value;
+      const total = row.children[3].value;
+      items.push({ description, quantity, unitPrice, total });
+    });
+
     // Generate PDF
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
-    // Set font and alignment
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(14);
+    // Add Logo
+    const logo = await loadImage('Itech-computers-logo1.webp');
+    doc.addImage(logo, 'PNG', 10, 10, 50, 20);
 
     // Invoice Header
     doc.setFontSize(18);
-    doc.text("SALES INVOICE", 10, 20);
-
-    // Company Details
+    doc.text("INVOICE", 10, 40);
     doc.setFontSize(12);
-    doc.text(`Your Company Name: ${companyName}`, 10, 30);
-    doc.text(`Address: ${address}`, 10, 40);
-    doc.text(`Phone: ${phone}`, 10, 50);
+    doc.text(`Company Name: ${companyName}`, 10, 50);
+    doc.text(`Address: ${address}`, 10, 60);
+    doc.text(`Phone: ${phone}`, 10, 70);
+    doc.text(`Purchase Order Number: ${purchaseOrderNumber}`, 10, 80);
+    doc.text(`Date: ${date}`, 10, 90);
 
-    // Invoice Details
-    doc.text(`Purchase Order Number: ${purchaseOrderNumber}`, 10, 60);
-    doc.text(`Date: ${date}`, 10, 70);
-
-    // Total
-    doc.setFontSize(14);
-    doc.text("TOTAL", 10, 80);
+    // Invoice Table
+    const tableData = items.map(item => [item.description, item.quantity, `${item.unitPrice}`, `${item.total}`]);
+    doc.autoTable({
+      startY: 100,
+      head: [['Description', 'Quantity', 'Unit Price', 'Total']],
+      body: tableData,
+    });
 
     // Save PDF
     doc.save(`Invoice_${purchaseOrderNumber}.pdf`);
 
     closeModal('invoiceModal');
   });
+
+  async function loadImage(src) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => resolve(img);
+    });
+  }
     function openPaymentVoucherModal() {
     document.getElementById('paymentVoucherModal').classList.remove('hidden');
   }
@@ -796,7 +841,7 @@
     doc.text(`Date: ${date}`, 10, 110);
     doc.text(`Serial No.: ${serialNo}`, 10, 120);
     doc.text(`Payment Method: ${paymentMethod}`, 10, 130);
-    doc.text(`Amount: $${amount}`, 10, 140);
+    doc.text(`Amount: ${amount}`, 10, 140);
 
     // Save PDF
     doc.save(`Payment_Voucher_${serialNo}.pdf`);
@@ -858,7 +903,7 @@
     doc.text(`Dec Date: ${decDate}`, 10, 90);
 
     // Quotation Table
-    const tableData = items.map(item => [item.description, item.quantity, `$${item.unitPrice}`, `$${item.total}`]);
+    const tableData = items.map(item => [item.description, item.quantity, `${item.unitPrice}`, `${item.total}`]);
     doc.autoTable({
       startY: 100,
       head: [['Description', 'Quantity', 'Unit Price', 'Total']],
