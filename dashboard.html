@@ -597,7 +597,7 @@
     <p class="text-2xl font-bold">Ugx<span id="stockBalance">0</span></p>
   </div>
 </div>
-
+    
 <!-- Bar Graph for Sales Analysis -->
 <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mb-8">
   <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-chart-bar mr-2"></i>Sales Analysis (Last 6 Months)</h3>
@@ -1798,6 +1798,51 @@ setInterval(fetchNotifications, 10000);
 
 // Fetch notifications on page load
 document.addEventListener('DOMContentLoaded', fetchNotifications);
+
+    // Function to fetch and update overview data
+async function fetchOverviewData() {
+  try {
+    // Fetch total sales
+    const totalSalesResponse = await fetch(`${backendUrl}/sales/`);
+    const totalSalesData = await totalSalesResponse.json();
+    const totalSales = totalSalesData.sales.reduce((sum, sale) => sum + sale.total_amount, 0);
+    document.getElementById('totalSales').textContent = totalSales.toLocaleString();
+
+    // Fetch gross profit
+    const grossProfitResponse = await fetch(`${backendUrl}/net_profit/`);
+    const grossProfitData = await grossProfitResponse.json();
+    document.getElementById('grossProfit').textContent = grossProfitData.net_profit.toLocaleString();
+
+    // Fetch total expenses
+    const totalExpensesResponse = await fetch(`${backendUrl}/expenses/`);
+    const totalExpensesData = await totalExpensesResponse.json();
+    const totalExpenses = totalExpensesData.expenses.reduce((sum, expense) => sum + expense.total, 0);
+    document.getElementById('totalExpenses').textContent = totalExpenses.toLocaleString();
+
+    // Fetch debtors balance
+    const debtorsBalanceResponse = await fetch(`${backendUrl}/debtors_balance/`);
+    const debtorsBalanceData = await debtorsBalanceResponse.json();
+    document.getElementById('debtorsBalance').textContent = debtorsBalanceData.debtors_balance.toLocaleString();
+
+    // Fetch net profit
+    const netProfitResponse = await fetch(`${backendUrl}/net_profit/`);
+    const netProfitData = await netProfitResponse.json();
+    document.getElementById('netProfit').textContent = netProfitData.net_profit.toLocaleString();
+
+    // Fetch stock balance
+    const stockBalanceResponse = await fetch(`${backendUrl}/total_stock/`);
+    const stockBalanceData = await stockBalanceResponse.json();
+    document.getElementById('stockBalance').textContent = stockBalanceData.total_stock.toLocaleString();
+  } catch (error) {
+    console.error('Error fetching overview data:', error);
+  }
+}
+
+// Fetch overview data on page load
+document.addEventListener('DOMContentLoaded', fetchOverviewData);
+
+// Poll for updates every 10 seconds
+setInterval(fetchOverviewData, 10000);
     
     
     // Fetch and Display Sales Analysis (Last 6 Months)
