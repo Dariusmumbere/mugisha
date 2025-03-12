@@ -266,6 +266,94 @@
 .gray-button:hover {
   background-color: #4b5563;
 }
+    /* Notification dropdown */
+.notification-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Notification button */
+.notification-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  padding: 10px;
+}
+
+/* Red badge for unread notifications */
+.notification-badge {
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: none; /* Hidden by default */
+}
+
+/* Notification list */
+.notification-list {
+  position: absolute;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-height: 300px;
+  overflow-y: auto;
+  width: 300px;
+  z-index: 1000;
+  padding: 10px;
+}
+
+/* Scrollbar styling */
+.notification-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Hide notification list by default */
+.notification-list.hidden {
+  display: none;
+}
+
+/* Notification item */
+.notification-item {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+/* Highlight unread notifications */
+.notification-item.unread {
+  background-color: #f0f8ff; /* Light blue background */
+  font-weight: bold;
+}
+
+/* Hover effect */
+.notification-item:hover {
+  background-color: #f9f9f9;
+}
 
   </style>
   <meta charset="UTF-8">
@@ -299,6 +387,15 @@
   </header>
 
   <!-- Horizontal Quick Actions -->
+  <div class="notification-dropdown">
+  <button onclick="toggleNotifications()" class="notification-button">
+    <i class="fas fa-bell"></i>
+    <span id="notification-count" class="notification-badge">0</span>
+  </button>
+  <div id="notification-list" class="notification-list hidden">
+    <!-- Notifications will be dynamically added here -->
+  </div>
+</div>
   <div class="quick-actions">
     <div class="action-item">
       <i class="fas fa-bell"></i>
@@ -1597,6 +1694,71 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Error fetching transactions:', error);
       }
     }
+    // Fetch notifications
+async function fetchNotifications() {
+  try {
+    // Fetch all notifications
+    const response = await fetch(`${backendUrl}/notifications/`);
+    const data = await response.json();
+    const notifications = data.notifications;
+
+    // Fetch unread notifications count
+    const unreadResponse = await fetch(`${backendUrl}/notifications/unread/`);
+    const unreadData = await unreadResponse.json();
+    const unreadCount = unreadData.unread_count;
+
+    // Update notification count badge
+    const notificationCount = document.getElementById('notification-count');
+    notificationCount.textContent = unreadCount;
+
+    // Show or hide the badge
+    if (unreadCount > 0) {
+      notificationCount.style.display = 'inline-block'; // Show the badge
+    } else {
+      notificationCount.style.display = 'none'; // Hide the badge
+    }
+
+    // Populate notification list
+    const notificationList = document.getElementById('notification-list');
+    notificationList.innerHTML = notifications.map(notification => `
+      <div class="notification-item ${notification.is_read ? '' : 'unread'}">
+        <p>${notification.message}</p>
+        <small>${new Date(notification.created_at).toLocaleString()}</small>
+      </div>
+    `).join('');
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+  }
+}
+
+// Mark notifications as read
+async function markNotificationsAsRead() {
+  try {
+    await fetch(`${backendUrl}/notifications/mark_as_read/`, {
+      method: 'PUT',
+    });
+    fetchNotifications(); // Refresh the notifications
+  } catch (error) {
+    console.error('Error marking notifications as read:', error);
+  }
+}
+
+// Toggle notifications dropdown
+function toggleNotifications() {
+  const notificationList = document.getElementById('notification-list');
+  notificationList.classList.toggle('hidden');
+
+  // Mark notifications as read when the dropdown is opened
+  if (!notificationList.classList.contains('hidden')) {
+    markNotificationsAsRead();
+  }
+}
+
+// Poll for new notifications every 10 seconds
+setInterval(fetchNotifications, 10000);
+
+// Fetch notifications on page load
+document.addEventListener('DOMContentLoaded', fetchNotifications);
     // Fetch and Display Sales Analysis (Last 6 Months)
 
 
