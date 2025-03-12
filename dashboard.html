@@ -276,6 +276,8 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900">
   <!-- Header -->
@@ -318,11 +320,6 @@
     <span class="default-text">Make Payment</span>
     <span class="hover-text">Create Payment Voucher</span>
   </div>
-    <div class="action-item">
-      <i class="fas fa-hand-holding-usd"></i>
-      <span class="default-text">Request Payment</span>
-      <span class="hover-text">Request Payment</span>
-    </div>
     <div class="action-item">
       <i class="fas fa-money-check-alt"></i>
       <a href="expenses.html">Daily Expenses</a>
@@ -643,26 +640,34 @@
     </div>
   </div>
 
-    <!-- Invoice Modal -->
-<div id="invoiceModal" class="modal-overlay hidden">
+    <div id="quotationModal" class="modal-overlay hidden">
   <div class="modal-content">
-    <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-file-invoice mr-2"></i>Create Invoice</h3>
-    <form id="invoiceForm" class="space-y-4">
+    <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-file-alt mr-2"></i>Create Quotation</h3>
+    <form id="quotationForm" class="space-y-4">
       <div class="grid grid-cols-2 gap-4">
-        <input type="text" placeholder="Your Company Name" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
-        <input type="text" placeholder="Address" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+        <input type="text" placeholder="Customer Name" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+        <input type="text" placeholder="Route #" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
       </div>
       <div class="grid grid-cols-2 gap-4">
-        <input type="text" placeholder="Phone" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
-        <input type="text" placeholder="Purchase Order Number" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+        <input type="text" placeholder="Customer Address" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+        <input type="date" placeholder="Route Date" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
       </div>
-      <input type="date" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
-      <input type="number" placeholder="Total Amount" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
-      <button type="submit" class="gray-button w-full">Generate Invoice PDF</button>
+      <input type="date" placeholder="Dec Date" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      <div id="quotationItems" class="space-y-2">
+        <div class="grid grid-cols-4 gap-2">
+          <input type="text" placeholder="Item Description" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+          <input type="number" placeholder="Quantity" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+          <input type="number" placeholder="Unit Price" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+          <input type="number" placeholder="Total" class="p-2 border rounded dark:bg-gray-700 dark:text-white" readonly>
+        </div>
+      </div>
+      <button type="button" onclick="addQuotationItem()" class="gray-button">Add Item</button>
+      <button type="submit" class="gray-button w-full">Generate Quotation PDF</button>
     </form>
-    <button onclick="closeModal('invoiceModal')" class="close-button">Close</button>
+    <button onclick="closeModal('quotationModal')" class="close-button">Close</button>
   </div>
 </div>
+
     <!-- Payment Voucher Modal -->
 <div id="paymentVoucherModal" class="modal-overlay hidden">
   <div class="modal-content">
@@ -690,35 +695,54 @@
   </div>
 </div>
 
-    <!-- Quotation Modal -->
-<div id="quotationModal" class="modal-overlay hidden">
+    <!-- Invoice Modal -->
+<div id="invoiceModal" class="modal-overlay hidden">
   <div class="modal-content">
-    <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-file-alt mr-2"></i>Create Quotation</h3>
-    <form id="quotationForm" class="space-y-4">
+    <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-file-invoice mr-2"></i>Create Invoice</h3>
+    <form id="invoiceForm" class="space-y-4">
       <div class="grid grid-cols-2 gap-4">
-        <input type="text" placeholder="Customer Name" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
-        <input type="text" placeholder="Route #" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+        <input type="text" placeholder="Your Company Name" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+        <input type="text" placeholder="Address" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
       </div>
       <div class="grid grid-cols-2 gap-4">
-        <input type="text" placeholder="Customer Address" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
-        <input type="date" placeholder="Route Date" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+        <input type="text" placeholder="Phone" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+        <input type="text" placeholder="Purchase Order Number" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
       </div>
-      <input type="date" placeholder="Dec Date" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
-      <input type="text" placeholder="CPY Description" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
-      <input type="number" placeholder="Unit Price" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
-      <input type="number" placeholder="Amount" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
-      <button type="submit" class="gray-button w-full">Generate Quotation PDF</button>
+      <input type="date" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      <div id="invoiceItems" class="space-y-2">
+        <div class="grid grid-cols-4 gap-2">
+          <input type="text" placeholder="Item Description" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+          <input type="number" placeholder="Quantity" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+          <input type="number" placeholder="Unit Price" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+          <input type="number" placeholder="Total" class="p-2 border rounded dark:bg-gray-700 dark:text-white" readonly>
+        </div>
+      </div>
+      <button type="button" onclick="addInvoiceItem()" class="gray-button">Add Item</button>
+      <button type="submit" class="gray-button w-full">Generate Invoice PDF</button>
     </form>
-    <button onclick="closeModal('quotationModal')" class="close-button">Close</button>
+    <button onclick="closeModal('invoiceModal')" class="close-button">Close</button>
   </div>
 </div>
-
+    
   <!-- JavaScript -->
   <script>
     const backendUrl = 'https://man-m681.onrender.com'; // Replace with your Render backend URL
 
     function openInvoiceModal() {
     document.getElementById('invoiceModal').classList.remove('hidden');
+  }
+
+  function addInvoiceItem() {
+    const invoiceItems = document.getElementById('invoiceItems');
+    const newItem = document.createElement('div');
+    newItem.classList.add('grid', 'grid-cols-4', 'gap-2');
+    newItem.innerHTML = `
+      <input type="text" placeholder="Item Description" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      <input type="number" placeholder="Quantity" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      <input type="number" placeholder="Unit Price" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      <input type="number" placeholder="Total" class="p-2 border rounded dark:bg-gray-700 dark:text-white" readonly>
+    `;
+    invoiceItems.appendChild(newItem);
   }
 
   document.getElementById('invoiceForm').addEventListener('submit', async (e) => {
@@ -728,25 +752,42 @@
     const phone = e.target[2].value;
     const purchaseOrderNumber = e.target[3].value;
     const date = e.target[4].value;
-    const totalAmount = e.target[5].value;
+
+    const items = [];
+    const itemRows = document.querySelectorAll('#invoiceItems .grid');
+    itemRows.forEach(row => {
+      const description = row.children[0].value;
+      const quantity = row.children[1].value;
+      const unitPrice = row.children[2].value;
+      const total = row.children[3].value;
+      items.push({ description, quantity, unitPrice, total });
+    });
 
     // Generate PDF
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
+    // Add Logo
+    const logo = await loadImage('Itech-computers-logo1.webp');
+    doc.addImage(logo, 'PNG', 10, 10, 50, 20);
+
     // Invoice Header
     doc.setFontSize(18);
-    doc.text("INVOICE", 10, 20);
+    doc.text("INVOICE", 10, 40);
     doc.setFontSize(12);
-    doc.text(`Company Name: ${companyName}`, 10, 30);
-    doc.text(`Address: ${address}`, 10, 40);
-    doc.text(`Phone: ${phone}`, 10, 50);
-    doc.text(`Purchase Order Number: ${purchaseOrderNumber}`, 10, 60);
-    doc.text(`Date: ${date}`, 10, 70);
+    doc.text(`Company Name: ${companyName}`, 10, 50);
+    doc.text(`Address: ${address}`, 10, 60);
+    doc.text(`Phone: ${phone}`, 10, 70);
+    doc.text(`Purchase Order Number: ${purchaseOrderNumber}`, 10, 80);
+    doc.text(`Date: ${date}`, 10, 90);
 
-    // Invoice Total
-    doc.setFontSize(14);
-    doc.text(`Total Amount: $${totalAmount}`, 10, 90);
+    // Invoice Table
+    const tableData = items.map(item => [item.description, item.quantity, `$${item.unitPrice}`, `$${item.total}`]);
+    doc.autoTable({
+      startY: 100,
+      head: [['Description', 'Quantity', 'Unit Price', 'Total']],
+      body: tableData,
+    });
 
     // Save PDF
     doc.save(`Invoice_${purchaseOrderNumber}.pdf`);
@@ -754,6 +795,13 @@
     closeModal('invoiceModal');
   });
 
+  async function loadImage(src) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => resolve(img);
+    });
+  }
     function openPaymentVoucherModal() {
     document.getElementById('paymentVoucherModal').classList.remove('hidden');
   }
@@ -775,20 +823,24 @@
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
+    // Add Logo
+    const logo = await loadImage('Itech-computers-logo1.webp');
+    doc.addImage(logo, 'PNG', 10, 10, 50, 20);
+
     // Payment Voucher Header
     doc.setFontSize(18);
-    doc.text("PAYMENT VOUCHER", 10, 20);
+    doc.text("PAYMENT VOUCHER", 10, 40);
     doc.setFontSize(12);
-    doc.text(`Company Name: ${companyName}`, 10, 30);
-    doc.text(`Address: ${address}`, 10, 40);
-    doc.text(`Contact No.: ${contactNo}`, 10, 50);
-    doc.text(`E-mail ID: ${email}`, 10, 60);
-    doc.text(`Pay To: ${payTo}`, 10, 70);
-    doc.text(`Pay By: ${payBy}`, 10, 80);
-    doc.text(`Date: ${date}`, 10, 90);
-    doc.text(`Serial No.: ${serialNo}`, 10, 100);
-    doc.text(`Payment Method: ${paymentMethod}`, 10, 110);
-    doc.text(`Amount: $${amount}`, 10, 120);
+    doc.text(`Company Name: ${companyName}`, 10, 50);
+    doc.text(`Address: ${address}`, 10, 60);
+    doc.text(`Contact No.: ${contactNo}`, 10, 70);
+    doc.text(`E-mail ID: ${email}`, 10, 80);
+    doc.text(`Pay To: ${payTo}`, 10, 90);
+    doc.text(`Pay By: ${payBy}`, 10, 100);
+    doc.text(`Date: ${date}`, 10, 110);
+    doc.text(`Serial No.: ${serialNo}`, 10, 120);
+    doc.text(`Payment Method: ${paymentMethod}`, 10, 130);
+    doc.text(`Amount: $${amount}`, 10, 140);
 
     // Save PDF
     doc.save(`Payment_Voucher_${serialNo}.pdf`);
@@ -800,6 +852,19 @@
     document.getElementById('quotationModal').classList.remove('hidden');
   }
 
+  function addQuotationItem() {
+    const quotationItems = document.getElementById('quotationItems');
+    const newItem = document.createElement('div');
+    newItem.classList.add('grid', 'grid-cols-4', 'gap-2');
+    newItem.innerHTML = `
+      <input type="text" placeholder="Item Description" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      <input type="number" placeholder="Quantity" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      <input type="number" placeholder="Unit Price" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      <input type="number" placeholder="Total" class="p-2 border rounded dark:bg-gray-700 dark:text-white" readonly>
+    `;
+    quotationItems.appendChild(newItem);
+  }
+
   document.getElementById('quotationForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const customerName = e.target[0].value;
@@ -807,26 +872,42 @@
     const customerAddress = e.target[2].value;
     const routeDate = e.target[3].value;
     const decDate = e.target[4].value;
-    const cpyDescription = e.target[5].value;
-    const unitPrice = e.target[6].value;
-    const amount = e.target[7].value;
+
+    const items = [];
+    const itemRows = document.querySelectorAll('#quotationItems .grid');
+    itemRows.forEach(row => {
+      const description = row.children[0].value;
+      const quantity = row.children[1].value;
+      const unitPrice = row.children[2].value;
+      const total = row.children[3].value;
+      items.push({ description, quantity, unitPrice, total });
+    });
 
     // Generate PDF
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
+    // Add Logo
+    const logo = await loadImage('Itech-computers-logo1.webp');
+    doc.addImage(logo, 'PNG', 10, 10, 50, 20);
+
     // Quotation Header
     doc.setFontSize(18);
-    doc.text("QUOTATION", 10, 20);
+    doc.text("QUOTATION", 10, 40);
     doc.setFontSize(12);
-    doc.text(`Customer Name: ${customerName}`, 10, 30);
-    doc.text(`Route #: ${routeNumber}`, 10, 40);
-    doc.text(`Customer Address: ${customerAddress}`, 10, 50);
-    doc.text(`Route Date: ${routeDate}`, 10, 60);
-    doc.text(`Dec Date: ${decDate}`, 10, 70);
-    doc.text(`CPY Description: ${cpyDescription}`, 10, 80);
-    doc.text(`Unit Price: $${unitPrice}`, 10, 90);
-    doc.text(`Amount: $${amount}`, 10, 100);
+    doc.text(`Customer Name: ${customerName}`, 10, 50);
+    doc.text(`Route #: ${routeNumber}`, 10, 60);
+    doc.text(`Customer Address: ${customerAddress}`, 10, 70);
+    doc.text(`Route Date: ${routeDate}`, 10, 80);
+    doc.text(`Dec Date: ${decDate}`, 10, 90);
+
+    // Quotation Table
+    const tableData = items.map(item => [item.description, item.quantity, `$${item.unitPrice}`, `$${item.total}`]);
+    doc.autoTable({
+      startY: 100,
+      head: [['Description', 'Quantity', 'Unit Price', 'Total']],
+      body: tableData,
+    });
 
     // Save PDF
     doc.save(`Quotation_${routeNumber}.pdf`);
