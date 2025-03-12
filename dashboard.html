@@ -1238,37 +1238,22 @@ function closeModal(modalId) {
   document.getElementById(modalId).classList.add('hidden');
 }
    async function fetchNetProfit() {
-  try {
-    const salesResponse = await fetch(`${backendUrl}/sales/`);
-    const salesData = await salesResponse.json();
-    const expensesResponse = await fetch(`${backendUrl}/expenses/`);
-    const expensesData = await expensesResponse.json();
+    try {
+        const response = await fetch(`${backendUrl}/net_profit/`);
+        const data = await response.json();
+        const netProfit = data.net_profit || 0;
 
-    // Calculate total profit from sales
-    let totalProfitFromSales = 0;
-    salesData.sales.forEach(sale => {
-      sale.items.forEach(item => {
-        if (item.type === "product") {
-          totalProfitFromSales += (item.unit_price - item.buying_price) * item.quantity;
-        } else if (item.type === "service") {
-          totalProfitFromSales += item.unit_price * item.quantity * 0.3; // 30% profit for services
-        }
-      });
-    });
-
-    // Calculate total expenses
-    const totalExpenses = expensesData.expenses.reduce((sum, expense) => sum + expense.total, 0);
-
-    // Calculate net profit
-    const netProfit = totalProfitFromSales - totalExpenses;
-
-    // Update the net profit in the finance card
-    document.getElementById('netProfitAmount').textContent = `UGX ${netProfit.toLocaleString()}`;
-    document.getElementById('netProfit').textContent = netProfit.toLocaleString();
-  } catch (error) {
-    console.error('Error fetching net profit:', error);
-  }
+        // Update the net profit in the finance card
+        document.getElementById('netProfitAmount').textContent = `UGX ${netProfit.toLocaleString()}`;
+    } catch (error) {
+        console.error('Error fetching net profit:', error);
+    }
 }
+
+// Call the function to fetch and display net profit on page load
+document.addEventListener('DOMContentLoaded', () => {
+    fetchNetProfit();
+});
     // Fetch and Display Last 3 Transactions
     async function fetchLast3Transactions() {
       try {
