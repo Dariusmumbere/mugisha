@@ -668,7 +668,7 @@
   </div>
 </div>
 
-    <!-- Payment Voucher Modal -->
+   <!-- Payment Voucher Modal -->
 <div id="paymentVoucherModal" class="modal-overlay hidden">
   <div class="modal-content">
     <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-money-check-alt mr-2"></i>Create Payment Voucher</h3>
@@ -688,7 +688,15 @@
       <input type="date" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
       <input type="text" placeholder="Serial No." class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
       <input type="text" placeholder="Payment Method" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
-      <input type="number" placeholder="Amount" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      <div id="paymentItems" class="space-y-2">
+        <div class="grid grid-cols-4 gap-2">
+          <input type="text" placeholder="Item Description" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+          <input type="number" placeholder="Quantity" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+          <input type="number" placeholder="Unit Price" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+          <input type="number" placeholder="Total" class="p-2 border rounded dark:bg-gray-700 dark:text-white" readonly>
+        </div>
+      </div>
+      <button type="button" onclick="addPaymentItem()" class="gray-button">Add Item</button>
       <button type="submit" class="gray-button w-full">Generate Payment Voucher PDF</button>
     </form>
     <button onclick="closeModal('paymentVoucherModal')" class="close-button">Close</button>
@@ -807,6 +815,19 @@
     document.getElementById('paymentVoucherModal').classList.remove('hidden');
   }
 
+  function addPaymentItem() {
+    const paymentItems = document.getElementById('paymentItems');
+    const newItem = document.createElement('div');
+    newItem.classList.add('grid', 'grid-cols-4', 'gap-2');
+    newItem.innerHTML = `
+      <input type="text" placeholder="Item Description" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      <input type="number" placeholder="Quantity" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      <input type="number" placeholder="Unit Price" class="p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      <input type="number" placeholder="Total" class="p-2 border rounded dark:bg-gray-700 dark:text-white" readonly>
+    `;
+    paymentItems.appendChild(newItem);
+  }
+
   document.getElementById('paymentVoucherForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const companyName = e.target[0].value;
@@ -818,7 +839,16 @@
     const date = e.target[6].value;
     const serialNo = e.target[7].value;
     const paymentMethod = e.target[8].value;
-    const amount = e.target[9].value;
+
+    const items = [];
+    const itemRows = document.querySelectorAll('#paymentItems .grid');
+    itemRows.forEach(row => {
+      const description = row.children[0].value;
+      const quantity = row.children[1].value;
+      const unitPrice = row.children[2].value;
+      const total = row.children[3].value;
+      items.push({ description, quantity, unitPrice, total });
+    });
 
     // Generate PDF
     const { jsPDF } = window.jspdf;
@@ -831,23 +861,47 @@
     // Payment Voucher Header
     doc.setFontSize(18);
     doc.text("PAYMENT VOUCHER", 10, 40);
+
+    // Company Details
     doc.setFontSize(12);
     doc.text(`Company Name: ${companyName}`, 10, 50);
     doc.text(`Address: ${address}`, 10, 60);
     doc.text(`Contact No.: ${contactNo}`, 10, 70);
     doc.text(`E-mail ID: ${email}`, 10, 80);
+
+    // Payment Details
     doc.text(`Pay To: ${payTo}`, 10, 90);
     doc.text(`Pay By: ${payBy}`, 10, 100);
     doc.text(`Date: ${date}`, 10, 110);
     doc.text(`Serial No.: ${serialNo}`, 10, 120);
     doc.text(`Payment Method: ${paymentMethod}`, 10, 130);
-    doc.text(`Amount: ${amount}`, 10, 140);
+
+    // Payment Items Table
+    const tableData = items.map(item => [item.description, item.quantity, `$${item.unitPrice}`, `$${item.total}`]);
+    doc.autoTable({
+      startY: 140,
+      head: [['Description', 'Quantity', 'Unit Price', 'Total']],
+      body: tableData,
+    });
+
+    // Total Amount
+    const totalAmount = items.reduce((sum, item) => sum + parseFloat(item.total), 0);
+    doc.setFontSize(14);
+    doc.text(`Total Amount: $${totalAmount.toFixed(2)}`, 10, doc.lastAutoTable.finalY + 10);
 
     // Save PDF
     doc.save(`Payment_Voucher_${serialNo}.pdf`);
 
     closeModal('paymentVoucherModal');
   });
+
+  async function loadImage(src) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => resolve(img);
+    });
+  }
 
     function openQuotationModal() {
     document.getElementById('quotationModal').classList.remove('hidden');
