@@ -606,20 +606,23 @@
     
 <!-- Bar Graph for Sales Analysis -->
 <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mb-8">
-  <h3 class="text-lg font-semibold mb-4 dark:text-white">
-    <i class="fas fa-chart-bar mr-2"></i>Sales Analysis (Last 6 Months)
-  </h3>
+  <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-chart-bar mr-2"></i>Sales Analysis (Last 6 Months)</h3>
   <canvas id="salesBarChart"></canvas>
 </div>
 
-<!-- Pie Chart for Profit Breakdown -->
+<!-- Recent Transactions -->
+<div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+  <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-receipt mr-2"></i>Last 3 Transactions</h3>
+  <ul id="recentTransactions" class="space-y-2">
+    <!-- Transactions will be dynamically added here -->
+  </ul>
+</div>
+
+<!-- Pie Chart for Essential Features -->
 <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mb-8">
-  <h3 class="text-lg font-semibold mb-4 dark:text-white">
-    <i class="fas fa-chart-pie mr-2"></i>Profit Breakdown
-  </h3>
+  <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-chart-pie mr-2"></i>Profit Breakdown</h3>
   <canvas id="profitPieChart"></canvas>
 </div>
-    
   <!-- Add Product Modal -->
   <div id="addProductModal" class="modal-overlay hidden">
     <div class="modal-content">
@@ -1934,159 +1937,6 @@ setInterval(fetchOverviewData, 10000);
       img.onload = () => resolve(img);
     });
   }
-
-    // Fetch sales data from the backend
-async function fetchSalesData() {
-  try {
-    const response = await fetch(`${backendUrl}/sales/`);
-    const data = await response.json();
-    return data.sales;
-  } catch (error) {
-    console.error('Error fetching sales data:', error);
-    return [];
-  }
-}
-
-// Render the bar graph
-async function renderSalesBarChart() {
-  const salesData = await fetchSalesData();
-
-  // Group sales by month
-  const monthlySales = {};
-  salesData.forEach(sale => {
-    const month = new Date(sale.created_at).toLocaleString('default', { month: 'short' });
-    if (!monthlySales[month]) {
-      monthlySales[month] = 0;
-    }
-    monthlySales[month] += sale.total_amount;
-  });
-
-  // Prepare data for the chart
-  const labels = Object.keys(monthlySales);
-  const data = Object.values(monthlySales);
-
-  // Get the canvas element
-  const ctx = document.getElementById('salesBarChart').getContext('2d');
-
-  // Create the bar chart
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Total Sales (UGX)',
-        data: data,
-        backgroundColor: 'rgba(54, 162, 235, 0.6)', // Blue color
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 1,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        y: {
-          beginAtZero: true,
-          title: {
-            display: true,
-            text: 'Amount (UGX)',
-          },
-        },
-        x: {
-          title: {
-            display: true,
-            text: 'Month',
-          },
-        },
-      },
-      plugins: {
-        legend: {
-          display: true,
-          position: 'top',
-        },
-        tooltip: {
-          enabled: true,
-          callbacks: {
-            label: (context) => `UGX ${context.raw.toLocaleString()}`,
-          },
-        },
-      },
-    },
-  });
-}
-
-// Call the function to render the bar graph
-document.addEventListener('DOMContentLoaded', renderSalesBarChart);
-
-    // Fetch profit breakdown data from the backend
-async function fetchProfitBreakdown() {
-  try {
-    const response = await fetch(`${backendUrl}/net_profit/`);
-    const data = await response.json();
-    return data.profit_breakdown; // Ensure your backend returns profit breakdown by category
-  } catch (error) {
-    console.error('Error fetching profit breakdown:', error);
-    return { products: 0, services: 0, other: 0 }; // Fallback data
-  }
-}
-
-// Render the pie chart
-async function renderProfitPieChart() {
-  const profitData = await fetchProfitBreakdown();
-
-  // Prepare data for the chart
-  const labels = Object.keys(profitData);
-  const data = Object.values(profitData);
-
-  // Get the canvas element
-  const ctx = document.getElementById('profitPieChart').getContext('2d');
-
-  // Create the pie chart
-  new Chart(ctx, {
-    type: 'pie',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Profit (UGX)',
-        data: data,
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.6)', // Red
-          'rgba(54, 162, 235, 0.6)', // Blue
-          'rgba(75, 192, 192, 0.6)', // Green
-        ],
-        borderColor: [
-          'rgba(255, 99, 132, 1)',
-          'rgba(54, 162, 235, 1)',
-          'rgba(75, 192, 192, 1)',
-        ],
-        borderWidth: 1,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: true,
-          position: 'bottom',
-        },
-        tooltip: {
-          enabled: true,
-          callbacks: {
-            label: (context) => {
-              const label = context.label || '';
-              const value = context.raw || 0;
-              return `${label}: UGX ${value.toLocaleString()}`;
-            },
-          },
-        },
-      },
-    },
-  });
-}
-
-// Call the function to render the pie chart
-document.addEventListener('DOMContentLoaded', renderProfitPieChart);
     
     
     // Fetch and Display Sales Analysis (Last 6 Months)
