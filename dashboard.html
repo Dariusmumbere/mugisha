@@ -456,6 +456,12 @@
     <span class="default-text">Make Payment</span>
     <span class="hover-text">Create Payment Voucher</span>
   </div>
+    <div class="action-item" onclick="openPaymentAcquisitionModal()">
+    <i class="fas fa-money-check-alt"></i>
+    <span class="default-text">Request Payment</span>
+    <span class="hover-text">Create Payment acquisition</span>
+  </div>
+    
     <div class="action-item">
       <i class="fas fa-money-check-alt"></i>
       <a href="expenses.html">Daily Expenses</a>
@@ -801,6 +807,34 @@
       <button type="submit" class="gray-button w-full">Generate Quotation PDF</button>
     </form>
     <button onclick="closeModal('quotationModal')" class="close-button">Close</button>
+  </div>
+</div>
+
+    <!-- Payment Acquisition Form Modal -->
+<div id="paymentAcquisitionModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-money-check-alt mr-2"></i>Payment Acquisition Form</h3>
+    <form id="paymentAcquisitionForm" class="space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <input type="text" placeholder="Payer Name" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+        <input type="text" placeholder="Payer Address" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <input type="text" placeholder="Payer Phone" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+        <input type="email" placeholder="Payer Email" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <input type="text" placeholder="Payment Reference Number" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+        <input type="date" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <input type="text" placeholder="Payment Method" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+        <input type="number" placeholder="Amount Paid" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+      </div>
+      <textarea placeholder="Payment Description" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" rows="3"></textarea>
+      <button type="submit" class="gray-button w-full">Generate Payment Receipt PDF</button>
+    </form>
+    <button onclick="closeModal('paymentAcquisitionModal')" class="close-button">Close</button>
   </div>
 </div>
 
@@ -1843,6 +1877,66 @@ document.addEventListener('DOMContentLoaded', fetchOverviewData);
 
 // Poll for updates every 10 seconds
 setInterval(fetchOverviewData, 10000);
+
+    function openPaymentAcquisitionModal() {
+    document.getElementById('paymentAcquisitionModal').classList.remove('hidden');
+  }
+
+  document.getElementById('paymentAcquisitionForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const payerName = e.target[0].value;
+    const payerAddress = e.target[1].value;
+    const payerPhone = e.target[2].value;
+    const payerEmail = e.target[3].value;
+    const paymentRefNumber = e.target[4].value;
+    const paymentDate = e.target[5].value;
+    const paymentMethod = e.target[6].value;
+    const amountPaid = e.target[7].value;
+    const paymentDescription = e.target[8].value;
+
+    // Generate PDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Add Logo
+    const logo = await loadImage('Itech-computers-logo1.webp');
+    doc.addImage(logo, 'PNG', 10, 10, 50, 20);
+
+    // Payment Receipt Header
+    doc.setFontSize(18);
+    doc.text("PAYMENT RECEIPT", 10, 40);
+
+    // Payer Details
+    doc.setFontSize(12);
+    doc.text(`Payer Name: ${payerName}`, 10, 50);
+    doc.text(`Payer Address: ${payerAddress}`, 10, 60);
+    doc.text(`Payer Phone: ${payerPhone}`, 10, 70);
+    doc.text(`Payer Email: ${payerEmail}`, 10, 80);
+
+    // Payment Details
+    doc.text(`Payment Reference Number: ${paymentRefNumber}`, 10, 90);
+    doc.text(`Payment Date: ${paymentDate}`, 10, 100);
+    doc.text(`Payment Method: ${paymentMethod}`, 10, 110);
+    doc.text(`Amount Paid: $${amountPaid}`, 10, 120);
+
+    // Payment Description
+    doc.text(`Payment Description:`, 10, 130);
+    doc.setFontSize(10);
+    doc.text(paymentDescription, 10, 140, { maxWidth: 180 });
+
+    // Save PDF
+    doc.save(`Payment_Receipt_${paymentRefNumber}.pdf`);
+
+    closeModal('paymentAcquisitionModal');
+  });
+
+  async function loadImage(src) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => resolve(img);
+    });
+  }
     
     
     // Fetch and Display Sales Analysis (Last 6 Months)
