@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <style>
+    /* Custom styles for the client management page */
+    .client-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    .client-table th, .client-table td {
+      padding: 12px;
+      border: 1px solid #e5e7eb;
+      text-align: left;
+    }
+    .client-table th {
+      background-color: #f9fafb;
+      font-weight: 600;
+      color: #374151;
+    }
+    .client-table tr:hover {
+      background-color: #f3f4f6;
+    }
+    .dark .client-table th, .dark .client-table td {
+      border-color: #374151;
+    }
+    .dark .client-table th {
+      background-color: #1f2937;
+      color: #f9fafb;
+    }
+    .dark .client-table tr:hover {
+      background-color: #374151;
+    }
+    .search-bar {
+      width: 100%;
+      max-width: 400px;
+      margin-bottom: 20px;
+    }
+    .search-bar input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #e5e7eb;
+    }
+    .dark .search-bar input {
+      background-color: #1f2937;
+      color: white;
+      border-color: #374151;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900">
+  <!-- Header -->
+  <header class="bg-white dark:bg-gray-800 shadow">
+    <div class="container mx-auto p-4 flex items-center justify-between">
+      <div class="flex items-center">
+        <div class="text-4xl text-blue-600 dark:text-blue-400 mr-4">
+          <img src="Itech-computers-logo1.webp" alt="Itech Computers Logo">
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold dark:text-white">NDYAKURUNGI ITECH COMPUTER SOLUTIONS</h1>
+          <p class="text-sm text-gray-600 dark:text-gray-400">Name it, we will provide & deliver it</p>
+        </div>
+      </div>
+      <button id="themeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700">
+        <i id="themeIcon" class="fas fa-moon text-gray-800 dark:text-yellow-400"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container mx-auto p-8">
+    <h1 class="text-3xl font-bold mb-6 dark:text-white">Client Management</h1>
+
+    <!-- Search Bar -->
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search clients by name, email, or phone..." oninput="filterClients()">
+    </div>
+
+    <!-- Client Table -->
+    <table class="client-table bg-white dark:bg-gray-800 rounded-lg shadow">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="clientTableBody">
+        <!-- Clients will be dynamically added here -->
+      </tbody>
+    </table>
+
+    <!-- Add Client Button -->
+    <button onclick="openAddClientModal()" class="bg-blue-500 text-white px-4 py-2 rounded mt-4 hover:bg-blue-600">
+      <i class="fas fa-plus mr-2"></i>Add New Client
+    </button>
+  </div>
+
+  <!-- Add Client Modal -->
+  <div id="addClientModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-plus mr-2"></i>Add New Client</h3>
+      <form id="addClientForm">
+        <input type="text" placeholder="Client Name" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+        <input type="email" placeholder="Client Email" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+        <input type="text" placeholder="Client Phone" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Add Client</button>
+      </form>
+      <button onclick="closeModal('addClientModal')" class="close-button">Close</button>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    const backendUrl = 'https://man-m681.onrender.com'; // Replace with your Render backend URL
+
+    // Fetch and display clients
+    async function fetchClients() {
+      try {
+        const response = await fetch(`${backendUrl}/clients/`);
+        const data = await response.json();
+        const clients = data.clients;
+
+        const clientTableBody = document.getElementById('clientTableBody');
+        clientTableBody.innerHTML = clients.map(client => `
+          <tr>
+            <td>${client.name}</td>
+            <td>${client.email}</td>
+            <td>${client.phone}</td>
+            <td class="actions">
+              <i class="fas fa-trash text-red-500 hover:text-red-700 cursor-pointer" onclick="deleteClient('${client.name}')"></i>
+              <i class="fas fa-edit text-blue-500 hover:text-blue-700 cursor-pointer ml-2" onclick="editClient('${client.name}', '${client.email}', '${client.phone}')"></i>
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error fetching clients:', error);
+      }
+    }
+
+    // Filter clients based on search input
+    function filterClients() {
+      const searchInput = document.getElementById('searchInput').value.toLowerCase();
+      const rows = document.querySelectorAll('#clientTableBody tr');
+
+      rows.forEach(row => {
+        const name = row.children[0].textContent.toLowerCase();
+        const email = row.children[1].textContent.toLowerCase();
+        const phone = row.children[2].textContent.toLowerCase();
+
+        if (name.includes(searchInput) || email.includes(searchInput) || phone.includes(searchInput)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+
+    // Open Add Client Modal
+    function openAddClientModal() {
+      document.getElementById('addClientModal').classList.remove('hidden');
+    }
+
+    // Close Modal
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+    }
+
+    // Add Client
+    document.getElementById('addClientForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const clientName = e.target[0].value;
+      const clientEmail = e.target[1].value;
+      const clientPhone = e.target[2].value;
+
+      const response = await fetch(`${backendUrl}/clients/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: clientName,
+          email: clientEmail,
+          phone: clientPhone
+        })
+      });
+
+      if (response.ok) {
+        alert('Client added successfully!');
+        e.target.reset();
+        closeModal('addClientModal');
+        fetchClients();
+      } else {
+        alert('Failed to add client');
+      }
+    });
+
+    // Delete Client
+    async function deleteClient(clientName) {
+      if (confirm(`Are you sure you want to delete ${clientName}?`)) {
+        const response = await fetch(`${backendUrl}/clients/${clientName}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          alert('Client deleted successfully!');
+          fetchClients();
+        } else {
+          alert('Failed to delete client');
+        }
+      }
+    }
+
+    // Edit Client
+    function editClient(name, email, phone) {
+      document.getElementById('addClientModal').classList.remove('hidden');
+      const form = document.getElementById('addClientForm');
+      form[0].value = name;
+      form[1].value = email;
+      form[2].value = phone;
+
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+        const clientName = e.target[0].value;
+        const clientEmail = e.target[1].value;
+        const clientPhone = e.target[2].value;
+
+        const response = await fetch(`${backendUrl}/clients/${name}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: clientName,
+            email: clientEmail,
+            phone: clientPhone
+          })
+        });
+
+        if (response.ok) {
+          alert('Client updated successfully!');
+          e.target.reset();
+          closeModal('addClientModal');
+          fetchClients();
+        } else {
+          alert('Failed to update client');
+        }
+      };
+    }
+
+    // Initialize
+    fetchClients();
+  </script>
+</body>
+</html>
