@@ -421,15 +421,9 @@
           <p class="text-sm text-gray-600 dark:text-gray-400">Name it, we will provide & deliver it</p>
         </div>
       </div>
-      <div class="notification-dropdown">
-        <div class="action-item" onclick="toggleNotifications()">
-          <i class="fas fa-bell"></i>
-          <span class="notification-badge" id="notification-count">0</span>
-        </div>
-        <div id="notification-list" class="notification-list hidden">
-          <!-- Notifications will be dynamically added here -->
-        </div>
-      </div>
+      <button id="themeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700">
+        <i id="themeIcon" class="fas fa-moon text-gray-800 dark:text-yellow-400"></i>
+      </button>
     </div>
   </header>
 
@@ -1948,6 +1942,12 @@ setInterval(fetchOverviewData, 10000);
       img.onload = () => resolve(img);
     });
   }
+    
+    
+    // Fetch and Display Sales Analysis (Last 6 Months)
+
+
+    
     
     // Initialize
     fetchProducts();
