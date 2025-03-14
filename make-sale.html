@@ -507,7 +507,7 @@
       document.getElementById(modalId).classList.add('hidden');
     }
 
-    async function generateReceipt() {
+   async function generateReceipt() {
     if (currentSale.length === 0) {
         alert('No items in the sale!');
         return;
@@ -548,13 +548,51 @@
 
             // Generate the receipt PDF
             const doc = new jsPDF();
-            doc.text('Receipt', 10, 10);
-            doc.text(`Client: ${selectedClient.name}`, 10, 20);
-            doc.text('Items:', 10, 30);
-            currentSale.forEach((item, index) => {
-                doc.text(`${item.itemName} - ${item.quantity} x ${item.unitPrice.toFixed(2)} = ${item.total.toFixed(2)}`, 10, 40 + (index * 10));
+
+            // Add receipt styling
+            doc.setFont("Courier"); // Use a monospace font for receipt-like appearance
+            doc.setFontSize(12);
+
+            // Header
+            doc.setFontSize(18);
+            doc.text("NDYAKURUNGI ITECH COMPUTER SOLUTIONS", 10, 10);
+            doc.setFontSize(12);
+            doc.text("Name it, we will provide & deliver it", 10, 18);
+            doc.text("----------------------------------------", 10, 24);
+
+            // Client Information
+            doc.text(`Bill to: ${selectedClient.name}`, 10, 30);
+            doc.text(`Date: ${new Date().toLocaleDateString()}`, 10, 36);
+            doc.text("----------------------------------------", 10, 42);
+
+            // Items Table
+            let yPos = 50;
+            doc.text("Item", 10, yPos);
+            doc.text("Qty", 70, yPos);
+            doc.text("Price", 100, yPos);
+            doc.text("Total", 140, yPos);
+            yPos += 10;
+
+            currentSale.forEach((item) => {
+                doc.text(item.itemName, 10, yPos);
+                doc.text(item.quantity.toString(), 70, yPos);
+                doc.text(`Ugx.${item.unitPrice.toFixed(2)}`, 100, yPos);
+                doc.text(`Ugx.${item.total.toFixed(2)}`, 140, yPos);
+                yPos += 10;
             });
-            doc.text(`Total: ${total.toFixed(2)}`, 10, 40 + (currentSale.length * 10));
+
+            // Total
+            doc.text("----------------------------------------", 10, yPos);
+            yPos += 10;
+            doc.text(`Total: Ugx.${total.toFixed(2)}`, 10, yPos);
+
+            // Footer
+            yPos += 20;
+            doc.setFontSize(10);
+            doc.text("Thank you for your purchase!", 10, yPos);
+            doc.text("Contact: +256-xxx-xxxxxx | Email: info@itech.com", 10, yPos + 6);
+
+            // Save the PDF
             doc.save('receipt.pdf');
 
             // Clear the current sale
