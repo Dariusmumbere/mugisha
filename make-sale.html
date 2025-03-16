@@ -507,7 +507,7 @@
       document.getElementById(modalId).classList.add('hidden');
     }
 
- async function generateReceipt() {
+async function generateReceipt() {
     if (currentSale.length === 0) {
         alert('No items in the sale!');
         return;
@@ -584,7 +584,7 @@
                 doc.text(generateDashes(190), 10, 50 + yOffset); // Full-width dashes
 
                 // Client Information (Inline)
-                const clientInfo = `Client Name: ${selectedClient.name}..........Contact: ${selectedClient.contact || '..........'}..........Client TIN: ${selectedClient.tin || '..........'}`;
+                const clientInfo = `Client Name: ${selectedClient.name} Contact: ${selectedClient.contact || '..........'}..........Client TIN: ${selectedClient.tin || '..........'}`;
                 doc.text(clientInfo, 10, 58 + yOffset);
 
                 // Date (Pushed to the right)
@@ -615,8 +615,8 @@
 
                 // Signature and Stamp (Inline with dashes below)
                 yPos += 20;
-                doc.text("Client's Signature: ___________________", 10, yPos);
-                doc.text("Authorized Official: ___________________", 110, yPos);
+                doc.text("Client's Signature:", 10, yPos);
+                doc.text("Authorized Official:", 110, yPos);
                 yPos += 10;
                 doc.text(".............................", 10, yPos); // Dashes below Client's Signature
                 doc.text(".............................", 110, yPos); // Dashes below Authorized Official
@@ -632,7 +632,7 @@
             generateSingleReceipt(doc, 0);
 
             // Generate the second receipt below the first one
-            const firstReceiptHeight = 150; // Approximate height of the first receipt
+            const firstReceiptHeight = 140; // Reduced height to fit two receipts
             generateSingleReceipt(doc, firstReceiptHeight);
 
             // Save the PDF with the format "receipt_client_name.pdf"
