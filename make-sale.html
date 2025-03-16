@@ -520,9 +520,14 @@
 
     const total = currentSale.reduce((sum, item) => sum + item.total, 0);
 
+    // Generate receipt number
+    const currentYear = new Date().getFullYear();
+    const receiptNumber = `${String(getNextReceiptNumber()).padStart(3, '0')}/${currentYear}`;
+
     // Prepare the sale data
     const saleData = {
         client_name: selectedClient.name,
+        receipt_number: receiptNumber, // Include receipt number in the sale data
         items: currentSale.map(item => ({
             name: item.itemName,
             type: item.type || "product", // Default to "product" if type is not set
@@ -557,18 +562,23 @@
             const generateSingleReceipt = (doc, yOffset) => {
                 // Header
                 doc.setFontSize(18);
-                doc.text("NDYAKURUNGI ITECH COMPUTER SOLUTIONS", 10, 10 + yOffset);
+                doc.text("NDYAKURUNGI ITECH COMPUTER SOLUTIONS", 105, 10 + yOffset, null, null, 'center');
+                doc.setFontSize(14);
+                doc.text("RECEIPT/TAX INVOICE", 105, 18 + yOffset, null, null, 'center');
                 doc.setFontSize(12);
-                doc.text("Name it, we will provide & deliver it", 10, 18 + yOffset);
-                doc.text("----------------------------------------", 10, 24 + yOffset);
+                doc.text("Name it, we will provide & deliver it", 105, 24 + yOffset, null, null, 'center');
+                doc.text("Location: Kasese | TIN: 12345678", 105, 30 + yOffset, null, null, 'center');
+                doc.text(`Receipt No: ${receiptNumber}`, 105, 36 + yOffset, null, null, 'center');
+                doc.text(generateDashes(190), 10, 42 + yOffset); // Full-width dashes
 
                 // Client Information
-                doc.text(`Bill to: ${selectedClient.name}`, 10, 30 + yOffset);
-                doc.text(`Date: ${new Date().toLocaleDateString()}`, 10, 36 + yOffset);
-                doc.text("----------------------------------------", 10, 42 + yOffset);
+                doc.text(`Client's TIN: ..........`, 10, 48 + yOffset);
+                doc.text(`Contact: ..........`, 10, 54 + yOffset);
+                doc.text(`Date: ${new Date().toLocaleDateString()}`, 10, 60 + yOffset);
+                doc.text(generateDashes(190), 10, 66 + yOffset); // Full-width dashes
 
                 // Items Table
-                let yPos = 50 + yOffset;
+                let yPos = 72 + yOffset;
                 doc.text("Item", 10, yPos);
                 doc.text("Qty", 70, yPos);
                 doc.text("Price", 100, yPos);
@@ -584,9 +594,14 @@
                 });
 
                 // Total
-                doc.text("----------------------------------------", 10, yPos);
+                doc.text(generateDashes(190), 10, yPos); // Full-width dashes
                 yPos += 10;
                 doc.text(`Total: Ugx.${total.toFixed(2)}`, 10, yPos);
+
+                // Signature and Stamp
+                yPos += 20;
+                doc.text("Client's Signature: ___________________", 10, yPos);
+                doc.text("Authorized Official (Stamp & Signature): ___________________", 10, yPos + 10);
 
                 // Footer
                 yPos += 20;
@@ -599,11 +614,12 @@
             generateSingleReceipt(doc, 0);
 
             // Generate the second receipt below the first one
-            const firstReceiptHeight = 100; // Approximate height of the first receipt
+            const firstReceiptHeight = 150; // Approximate height of the first receipt
             generateSingleReceipt(doc, firstReceiptHeight);
 
-            // Save the PDF
-            doc.save('receipt.pdf');
+            // Save the PDF with the format "receipt_client_name.pdf"
+            const fileName = `receipt_${selectedClient.name.replace(/\s+/g, '_')}.pdf`;
+            doc.save(fileName);
 
             // Clear the current sale
             currentSale = [];
@@ -617,6 +633,31 @@
         alert('Failed to create sale.');
     }
 }
+
+// Function to generate a string of dashes of a specific length
+function generateDashes(length) {
+    return '-'.repeat(length);
+}
+
+// Function to generate the next receipt number
+let receiptCounter = 0; // This should be persisted in your backend or localStorage
+function getNextReceiptNumber() {
+    receiptCounter += 1;
+    // Save the counter to localStorage or backend for persistence
+    localStorage.setItem('receiptCounter', receiptCounter);
+    return receiptCounter;
+}
+
+// Initialize receipt counter from localStorage
+function initializeReceiptCounter() {
+    const savedCounter = localStorage.getItem('receiptCounter');
+    if (savedCounter) {
+        receiptCounter = parseInt(savedCounter, 10);
+    }
+}
+
+// Call this function when the page loads
+initializeReceiptCounter();
     // Fetch Sales History
     async function fetchSalesHistory() {
       try {
