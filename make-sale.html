@@ -566,9 +566,8 @@ async function generateReceipt() {
                 doc.setFontSize(14);
 
                 // Box around "RECEIPT/TAX INVOICE"
-                doc.setDrawColor(0); // Black border
-                doc.rect(50, 16 + yOffset, 110, 10); // Draw a box
                 doc.text("RECEIPT/TAX INVOICE", 105, 22 + yOffset, null, null, 'center');
+                doc.setFontSize(13);
 
                 doc.setFontSize(12);
                 doc.text("Name it, we will provide & deliver it", 105, 30 + yOffset, null, null, 'center');
@@ -584,7 +583,7 @@ async function generateReceipt() {
                 doc.text(generateDashes(190), 10, 50 + yOffset); // Full-width dashes
 
                 // Client Information (Inline)
-                const clientInfo = `Client Name: ${selectedClient.name} Contact: ${selectedClient.contact || '..........'}..........Client TIN: ${selectedClient.tin || '..........'}`;
+                const clientInfo = `Bill to: ${selectedClient.name} Contact: ${selectedClient.contact || '..........'}..........}`;
                 doc.text(clientInfo, 10, 58 + yOffset);
 
                 // Date (Pushed to the right)
@@ -615,11 +614,9 @@ async function generateReceipt() {
 
                 // Signature and Stamp (Inline with dashes below)
                 yPos += 20;
-                doc.text("Client's Signature:", 10, yPos);
-                doc.text("Authorized Official:", 110, yPos);
+                doc.text("Client's Signature:...................", 10, yPos);
+                doc.text("Authorized Official:..................", 110, yPos);
                 yPos += 10;
-                doc.text(".............................", 10, yPos); // Dashes below Client's Signature
-                doc.text(".............................", 110, yPos); // Dashes below Authorized Official
 
                 // Footer
                 yPos += 20;
