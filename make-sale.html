@@ -566,6 +566,9 @@ async function generateReceipt() {
                 doc.setFontSize(14);
 
                 // Box around "RECEIPT/TAX INVOICE"
+                doc.setFontSize(16);
+                doc.setTextColor(255, 0, 0); // Red color
+                doc.text(`Receipt No: ${receiptNumber}`, 105, 44 + yOffset); 
                 doc.text("RECEIPT/TAX INVOICE", 105, 22 + yOffset, null, null, 'center');
                 doc.setFontSize(13);
 
@@ -573,17 +576,10 @@ async function generateReceipt() {
                 doc.text("Name it, we will provide & deliver it", 105, 30 + yOffset, null, null, 'center');
                 doc.text("Location: Kasese | TIN: 12345678", 105, 36 + yOffset, null, null, 'center');
 
-                // Receipt Number (Bigger and in Red)
-                doc.setFontSize(16);
-                doc.setTextColor(255, 0, 0); // Red color
-                doc.text(`Receipt No: ${receiptNumber}`, 105, 44 + yOffset, null, null, 'center');
-                doc.setTextColor(0, 0, 0); // Reset to black
-                doc.setFontSize(12);
-
                 doc.text(generateDashes(190), 10, 50 + yOffset); // Full-width dashes
 
                 // Client Information (Inline)
-                const clientInfo = `Bill to: ${selectedClient.name} Contact: ${selectedClient.contact || '..........'}..........}`;
+                const clientInfo = `Bill to: ${selectedClient.name}. Contact: ${selectedClient.contact || '..........'}..........`;
                 doc.text(clientInfo, 10, 58 + yOffset);
 
                 // Date (Pushed to the right)
