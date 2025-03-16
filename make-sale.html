@@ -582,7 +582,7 @@
                 doc.text(generateDashes(190), 10, 42 + yOffset); // Full-width dashes
 
                 // Client Information (Inline)
-                const clientInfo = `Bills to: ${selectedClient.name}.Contact: ${selectedClient.contact || '..........`;
+                const clientInfo = `Client Name: ${selectedClient.name}.Contact: ${selectedClient.contact || '..........'}`;
                 doc.text(clientInfo, 10, 50 + yOffset);
 
                 // Date (Pushed to the right)
