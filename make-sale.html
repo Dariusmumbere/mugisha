@@ -553,44 +553,54 @@
             doc.setFont("Courier"); // Use a monospace font for receipt-like appearance
             doc.setFontSize(12);
 
-            // Header
-            doc.setFontSize(18);
-            doc.text("NDYAKURUNGI ITECH COMPUTER SOLUTIONS", 10, 10);
-            doc.setFontSize(12);
-            doc.text("Name it, we will provide & deliver it", 10, 18);
-            doc.text("----------------------------------------", 10, 24);
+            // Function to generate a single receipt
+            const generateSingleReceipt = (doc, yOffset) => {
+                // Header
+                doc.setFontSize(18);
+                doc.text("NDYAKURUNGI ITECH COMPUTER SOLUTIONS", 10, 10 + yOffset);
+                doc.setFontSize(12);
+                doc.text("Name it, we will provide & deliver it", 10, 18 + yOffset);
+                doc.text("----------------------------------------", 10, 24 + yOffset);
 
-            // Client Information
-            doc.text(`Bill to: ${selectedClient.name}`, 10, 30);
-            doc.text(`Date: ${new Date().toLocaleDateString()}`, 10, 36);
-            doc.text("----------------------------------------", 10, 42);
+                // Client Information
+                doc.text(`Bill to: ${selectedClient.name}`, 10, 30 + yOffset);
+                doc.text(`Date: ${new Date().toLocaleDateString()}`, 10, 36 + yOffset);
+                doc.text("----------------------------------------", 10, 42 + yOffset);
 
-            // Items Table
-            let yPos = 50;
-            doc.text("Item", 10, yPos);
-            doc.text("Qty", 70, yPos);
-            doc.text("Price", 100, yPos);
-            doc.text("Total", 140, yPos);
-            yPos += 10;
-
-            currentSale.forEach((item) => {
-                doc.text(item.itemName, 10, yPos);
-                doc.text(item.quantity.toString(), 70, yPos);
-                doc.text(`Ugx.${item.unitPrice.toFixed(2)}`, 100, yPos);
-                doc.text(`Ugx.${item.total.toFixed(2)}`, 140, yPos);
+                // Items Table
+                let yPos = 50 + yOffset;
+                doc.text("Item", 10, yPos);
+                doc.text("Qty", 70, yPos);
+                doc.text("Price", 100, yPos);
+                doc.text("Total", 140, yPos);
                 yPos += 10;
-            });
 
-            // Total
-            doc.text("----------------------------------------", 10, yPos);
-            yPos += 10;
-            doc.text(`Total: Ugx.${total.toFixed(2)}`, 10, yPos);
+                currentSale.forEach((item) => {
+                    doc.text(item.itemName, 10, yPos);
+                    doc.text(item.quantity.toString(), 70, yPos);
+                    doc.text(`Ugx.${item.unitPrice.toFixed(2)}`, 100, yPos);
+                    doc.text(`Ugx.${item.total.toFixed(2)}`, 140, yPos);
+                    yPos += 10;
+                });
 
-            // Footer
-            yPos += 20;
-            doc.setFontSize(10);
-            doc.text("Thank you for your purchase!", 10, yPos);
-            doc.text("Contact: +256394812457 | Email: info@ni-computer-solutions.tech | website: https://ni-computer-solutions.tech", 10, yPos + 6);
+                // Total
+                doc.text("----------------------------------------", 10, yPos);
+                yPos += 10;
+                doc.text(`Total: Ugx.${total.toFixed(2)}`, 10, yPos);
+
+                // Footer
+                yPos += 20;
+                doc.setFontSize(10);
+                doc.text("Thank you for your purchase!", 10, yPos);
+                doc.text("Contact: +256394812457 | Email: info@ni-computer-solutions.tech | website: https://ni-computer-solutions.tech", 10, yPos + 6);
+            };
+
+            // Generate the first receipt
+            generateSingleReceipt(doc, 0);
+
+            // Generate the second receipt below the first one
+            const firstReceiptHeight = 100; // Approximate height of the first receipt
+            generateSingleReceipt(doc, firstReceiptHeight);
 
             // Save the PDF
             doc.save('receipt.pdf');
