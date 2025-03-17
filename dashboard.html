@@ -1565,6 +1565,7 @@ async function deleteStockItem(productName, productType) {
       };
     }
    // Function to edit stock item
+// Function to edit stock item
 function editStockItem(productName, productType, quantity, pricePerUnit) {
   document.getElementById('editStockModal').classList.remove('hidden');
   document.getElementById('editProductName').value = productName;
@@ -1594,6 +1595,8 @@ function editStockItem(productName, productType, quantity, pricePerUnit) {
       closeModal('editStockModal');
       fetchStock(); // Refresh the stock table
     } else {
+      const errorData = await response.json(); // Log the error details
+      console.error('Error updating stock item:', errorData);
       alert('Failed to update stock item');
     }
   };
