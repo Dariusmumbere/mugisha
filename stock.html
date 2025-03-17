@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Stock</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <style>
+    /* General Styles */
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f3f4f6;
+      color: #1f2937;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      background-color: #ffffff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .add-stock-btn {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .add-stock-btn:hover {
+      background-color: #1d4ed8;
+    }
+
+    .main-content {
+      padding: 20px;
+    }
+
+    .stock-table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .stock-table th,
+    .stock-table td {
+      padding: 12px;
+      text-align: left;
+    }
+
+    .stock-table th {
+      background-color: #2563eb;
+      color: white;
+      font-weight: 500;
+    }
+
+    .stock-table tr:hover {
+      background-color: #f3f4f6;
+    }
+
+    .stock-table td {
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .actions button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 5px 10px;
+      border-radius: 5px;
+      color: white;
+    }
+
+    .increment-btn {
+      background-color: #10b981; /* Green */
+    }
+
+    .increment-btn:hover {
+      background-color: #0d9e6e; /* Darker green */
+    }
+
+    .edit-btn {
+      background-color: #2563eb; /* Blue */
+    }
+
+    .edit-btn:hover {
+      background-color: #1d4ed8; /* Darker blue */
+    }
+
+    .delete-btn {
+      background-color: #ef4444; /* Red */
+    }
+
+    .delete-btn:hover {
+      background-color: #dc2626; /* Darker red */
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 400px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-content h2 {
+      margin-top: 0;
+    }
+
+    .modal-content form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .modal-content input {
+      padding: 10px;
+      border: 1px solid #e5e7eb;
+      border-radius: 5px;
+    }
+
+    .modal-content button {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .modal-content button:hover {
+      background-color: #1d4ed8;
+    }
+
+    .close-btn {
+      background-color: #ef4444;
+      margin-top: 10px;
+    }
+
+    .close-btn:hover {
+      background-color: #dc2626;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>Manage Stock</h1>
+    <button class="add-stock-btn" onclick="openAddStockModal()">
+      <i class="fas fa-plus"></i> Add New Stock
+    </button>
+  </header>
+
+  <main class="main-content">
+    <table class="stock-table">
+      <thead>
+        <tr>
+          <th>Product Name</th>
+          <th>Type</th>
+          <th>Quantity</th>
+          <th>Price Per Unit</th>
+          <th>Total Value</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="stockTableBody">
+        <!-- Stock items will be dynamically added here -->
+      </tbody>
+    </table>
+  </main>
+
+  <!-- Add Stock Modal -->
+  <div id="addStockModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h2>Add New Stock</h2>
+      <form id="addStockForm">
+        <input type="text" placeholder="Product Name" required>
+        <input type="text" placeholder="Product Type" required>
+        <input type="number" placeholder="Quantity" required>
+        <input type="number" placeholder="Price Per Unit" required>
+        <button type="submit">Add Stock</button>
+      </form>
+      <button class="close-btn" onclick="closeModal('addStockModal')">Close</button>
+    </div>
+  </div>
+
+  <!-- Edit Stock Modal -->
+  <div id="editStockModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h2>Edit Stock</h2>
+      <form id="editStockForm">
+        <input type="hidden" id="editProductName">
+        <input type="hidden" id="editProductType">
+        <input type="number" id="editQuantity" placeholder="Quantity" required>
+        <input type="number" id="editPricePerUnit" placeholder="Price Per Unit" required>
+        <button type="submit">Update Stock</button>
+      </form>
+      <button class="close-btn" onclick="closeModal('editStockModal')">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const backendUrl = 'https://man-m681.onrender.com'; // Replace with your backend URL
+
+    // Fetch and display stock items
+    async function fetchStock() {
+      try {
+        const response = await fetch(`${backendUrl}/stock/`);
+        const data = await response.json();
+        const stockTableBody = document.getElementById('stockTableBody');
+        stockTableBody.innerHTML = data.stock.map(item => `
+          <tr>
+            <td>${item.product_name}</td>
+            <td>${item.product_type}</td>
+            <td>${item.quantity}</td>
+            <td>UGX ${item.price_per_unit.toLocaleString()}</td>
+            <td>UGX ${(item.quantity * item.price_per_unit).toLocaleString()}</td>
+            <td class="actions">
+              <button class="increment-btn" onclick="incrementStock('${item.product_name}', '${item.product_type}')">
+                <i class="fas fa-plus"></i> Increment
+              </button>
+              <button class="edit-btn" onclick="editStockItem('${item.product_name}', '${item.product_type}', ${item.quantity}, ${item.price_per_unit})">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+              <button class="delete-btn" onclick="deleteStockItem('${item.product_name}', '${item.product_type}')">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error fetching stock:', error);
+      }
+    }
+
+    // Increment Stock Quantity
+    async function incrementStock(productName, productType) {
+      try {
+        const response = await fetch(`${backendUrl}/stock/${productName}/${productType}/increment`, {
+          method: 'PUT',
+        });
+
+        if (response.ok) {
+          alert('Stock quantity incremented successfully!');
+          fetchStock(); // Refresh the stock table
+        } else {
+          alert('Failed to increment stock');
+        }
+      } catch (error) {
+        console.error('Error incrementing stock:', error);
+      }
+    }
+
+    // Open Add Stock Modal
+    function openAddStockModal() {
+      document.getElementById('addStockModal').classList.remove('hidden');
+    }
+
+    // Close Modal
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+    }
+
+    // Add Stock
+    document.getElementById('addStockForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const productName = e.target[0].value;
+      const productType = e.target[1].value;
+      const quantity = parseFloat(e.target[2].value);
+      const pricePerUnit = parseFloat(e.target[3].value);
+
+      try {
+        const response = await fetch(`${backendUrl}/stock/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            product_name: productName,
+            product_type: productType,
+            quantity: quantity,
+            price_per_unit: pricePerUnit,
+          }),
+        });
+
+        if (response.ok) {
+          alert('Stock added successfully!');
+          closeModal('addStockModal');
+          fetchStock();
+        } else {
+          alert('Failed to add stock');
+        }
+      } catch (error) {
+        console.error('Error adding stock:', error);
+      }
+    });
+
+    // Edit Stock
+    function editStockItem(productName, productType, quantity, pricePerUnit) {
+      document.getElementById('editStockModal').classList.remove('hidden');
+      document.getElementById('editProductName').value = productName;
+      document.getElementById('editProductType').value = productType;
+      document.getElementById('editQuantity').value = quantity;
+      document.getElementById('editPricePerUnit').value = pricePerUnit;
+
+      const form = document.getElementById('editStockForm');
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+        const updatedQuantity = parseFloat(document.getElementById('editQuantity').value);
+        const updatedPricePerUnit = parseFloat(document.getElementById('editPricePerUnit').value);
+
+        try {
+          const response = await fetch(`${backendUrl}/stock/${productName}/${productType}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              quantity: updatedQuantity,
+              price_per_unit: updatedPricePerUnit,
+            }),
+          });
+
+          if (response.ok) {
+            alert('Stock updated successfully!');
+            closeModal('editStockModal');
+            fetchStock();
+          } else {
+            alert('Failed to update stock');
+          }
+        } catch (error) {
+          console.error('Error updating stock:', error);
+        }
+      };
+    }
+
+    // Delete Stock
+    async function deleteStockItem(productName, productType) {
+      if (confirm(`Are you sure you want to delete ${productName} (${productType})?`)) {
+        try {
+          const response = await fetch(`${backendUrl}/stock/${productName}/${productType}`, {
+            method: 'DELETE',
+          });
+
+          if (response.ok) {
+            alert('Stock deleted successfully!');
+            fetchStock();
+          } else {
+            alert('Failed to delete stock');
+          }
+        } catch (error) {
+          console.error('Error deleting stock:', error);
+        }
+      }
+    }
+
+    // Initialize
+    fetchStock();
+  </script>
+</body>
+</html>
