@@ -1564,18 +1564,14 @@ async function fetchStock() {
         }
       };
     }
-    // Edit Stock Item
-    function editStockItem(productName, productType, quantity, pricePerUnit) {
-  // Open the edit modal
+   // Function to edit stock item
+function editStockItem(productName, productType, quantity, pricePerUnit) {
   document.getElementById('editStockModal').classList.remove('hidden');
-
-  // Pre-fill the form with the selected stock item's data
   document.getElementById('editProductName').value = productName;
   document.getElementById('editProductType').value = productType;
   document.getElementById('editQuantity').value = quantity;
   document.getElementById('editPricePerUnit').value = pricePerUnit;
 
-  // Handle form submission
   const form = document.getElementById('editStockForm');
   form.onsubmit = async (e) => {
     e.preventDefault();
@@ -1602,6 +1598,7 @@ async function fetchStock() {
     }
   };
 }
+    
     // Edit Service
     function editService(name, description, price) {
       document.getElementById('addServiceModal').classList.remove('hidden');
