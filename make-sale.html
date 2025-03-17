@@ -577,12 +577,12 @@
 
                 doc.setFontSize(12);
                 doc.text("Name it, we will provide & deliver it", 105, 30 + yOffset, null, null, 'center');
-                doc.text("Location: Kasese | TIN: 12345678", 105, 36 + yOffset, null, null, 'center');
+                doc.text("Location: Kasese | TIN: 1003911766", 105, 36 + yOffset, null, null, 'center');
 
                 doc.text(generateDashes(190), 10, 42 + yOffset); // Full-width dashes
 
                 // Client Information (Inline)
-                const clientInfo = `Client Name: ${selectedClient.name}\nContact: ${selectedClient.contact || '..........'}`;
+                const clientInfo = `Client Name: ${selectedClient.name}`;
                 doc.text(clientInfo, 10, 50 + yOffset);
 
                 // Date (Pushed to the right)
@@ -628,10 +628,6 @@
 
             // Generate the first receipt
             generateSingleReceipt(doc, 0);
-
-            // Generate the second receipt below the first one
-            const firstReceiptHeight = 150; // Adjusted height to fit two receipts
-            generateSingleReceipt(doc, firstReceiptHeight);
 
             // Save the PDF with the format "receipt_client_name.pdf"
             const fileName = `receipt_${selectedClient.name.replace(/\s+/g, '_')}.pdf`;
