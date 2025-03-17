@@ -512,7 +512,6 @@
   const teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
   const tens = ["", "Ten", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
 
-  if (num === 0) return "Zero";
   if (num < 10) return units[num];
   if (num < 20) return teens[num - 10];
   if (num < 100) return tens[Math.floor(num / 10)] + " " + units[num % 10];
@@ -629,6 +628,7 @@
         yPos += 10;
         const totalPaidInfo = `Total Paid: ......................Balance: ......................`;
         doc.text(totalPaidInfo, 10, yPos);
+        yPos += 10;
         doc.text(`Amount in Words: ${amountInWords}`, 10, yPos);
 
         // Signature and Stamp (Inline with dashes below)
