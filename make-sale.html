@@ -625,11 +625,10 @@
         });
 
         // Total Paid and Balance (Inline)
-        doc.text(generateDashes(190), 10, yPos);
+        doc.text(generateDashes(190), 10, yPos); // Full-width dashes
         yPos += 10;
-        const totalPaidInfo = `Total Paid: Ugx.${total.toFixed(2)}`;
+        const totalPaidInfo = `Total Paid: ......................Balance: ......................`;
         doc.text(totalPaidInfo, 10, yPos);
-        yPos += 10;
         doc.text(`Amount in Words: ${amountInWords}`, 10, yPos);
 
         // Signature and Stamp (Inline with dashes below)
