@@ -664,6 +664,30 @@
     alert('Failed to create sale.');
   }
 }
+    // Function to generate a string of dashes of a specific length
+function generateDashes(length) {
+    return '-'.repeat(length);
+}
+
+// Function to generate the next receipt number
+let receiptCounter = 0; // This should be persisted in your backend or localStorage
+function getNextReceiptNumber() {
+    receiptCounter += 1;
+    // Save the counter to localStorage or backend for persistence
+    localStorage.setItem('receiptCounter', receiptCounter);
+    return receiptCounter;
+}
+
+// Initialize receipt counter from localStorage
+function initializeReceiptCounter() {
+    const savedCounter = localStorage.getItem('receiptCounter');
+    if (savedCounter) {
+        receiptCounter = parseInt(savedCounter, 10);
+    }
+}
+
+// Call this function when the page loads
+initializeReceiptCounter();
     
     // Fetch Sales History
     async function fetchSalesHistory() {
