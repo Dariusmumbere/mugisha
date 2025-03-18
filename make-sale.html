@@ -507,18 +507,52 @@
       document.getElementById(modalId).classList.add('hidden');
     }
 
-    function numberToWords(num) {
+   function numberToWords(num) {
   const units = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
   const teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
   const tens = ["", "Ten", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
 
-  if (num < 10) return units[num];
-  if (num < 20) return teens[num - 10];
-  if (num < 100) return tens[Math.floor(num / 10)] + " " + units[num % 10];
-  if (num < 1000) return units[Math.floor(num / 100)] + " Hundred " + numberToWords(num % 100);
-  if (num < 100000) return numberToWords(Math.floor(num / 1000)) + " Thousand " + numberToWords(num % 1000);
-  if (num < 10000000) return numberToWords(Math.floor(num / 100000)) + " Lakh " + numberToWords(num % 100000);
-  return numberToWords(Math.floor(num / 10000000)) + " Crore " + numberToWords(num % 10000000);
+  if (num === 0) return "Zero";
+
+  function convertChunk(chunk) {
+    if (chunk === 0) return "";
+    let words = "";
+    if (chunk >= 100) {
+      words += units[Math.floor(chunk / 100)] + " Hundred ";
+      chunk %= 100;
+    }
+    if (chunk >= 20) {
+      words += tens[Math.floor(chunk / 10)] + " ";
+      chunk %= 10;
+    } else if (chunk >= 10) {
+      words += teens[chunk - 10] + " ";
+      chunk = 0;
+    }
+    if (chunk > 0) {
+      words += units[chunk] + " ";
+    }
+    return words.trim();
+  }
+
+  let words = "";
+  if (num >= 1000000000) {
+    const billionChunk = Math.floor(num / 1000000000);
+    words += convertChunk(billionChunk) + " Billion ";
+    num %= 1000000000;
+  }
+  if (num >= 1000000) {
+    const millionChunk = Math.floor(num / 1000000);
+    words += convertChunk(millionChunk) + " Million ";
+    num %= 1000000;
+  }
+  if (num >= 1000) {
+    const thousandChunk = Math.floor(num / 1000);
+    words += convertChunk(thousandChunk) + " Thousand ";
+    num %= 1000;
+  }
+  words += convertChunk(num);
+
+  return words.trim() + " Shillings Only";
 }
 
    async function generateReceipt() {
@@ -539,7 +573,7 @@
   const receiptNumber = `${String(getNextReceiptNumber()).padStart(3, '0')}/${currentYear}`;
 
   // Convert total to words
-  const amountInWords = numberToWords(Math.floor(total)) + " Shillings Only";
+  const amountInWords = numberToWords(Math.floor(total));
 
   // Prepare the sale data
   const saleData = {
