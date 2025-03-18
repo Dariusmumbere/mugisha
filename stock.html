@@ -212,10 +212,10 @@
     <div class="modal-content">
       <h2>Add New Stock</h2>
       <form id="addStockForm">
-        <input type="text" placeholder="Product Name" required>
-        <input type="text" placeholder="Product Type" required>
-        <input type="number" placeholder="Quantity" required>
-        <input type="number" placeholder="Price Per Unit" required>
+        <input type="text" id="productName" placeholder="Product Name" required>
+        <input type="text" id="productType" placeholder="Product Type" required>
+        <input type="number" id="quantity" placeholder="Quantity" required>
+        <input type="number" id="pricePerUnit" placeholder="Price Per Unit" required>
         <button type="submit">Add Stock</button>
       </form>
       <button class="close-btn" onclick="closeModal('addStockModal')">Close</button>
@@ -271,27 +271,50 @@
       }
     }
 
-    // Increment Stock Quantity
-    async function incrementStock(productName, productType) {
+    // Function to fetch product details
+    async function fetchProductDetails(productName, productType) {
       try {
-        const response = await fetch(`${backendUrl}/stock/${productName}/${productType}/increment`, {
-          method: 'PUT',
-        });
-
-        if (response.ok) {
-          alert('Stock quantity incremented successfully!');
-          fetchStock(); // Refresh the stock table
-        } else {
-          alert('Failed to increment stock');
-        }
+        const response = await fetch(`${backendUrl}/products/${productName}/${productType}`);
+        const data = await response.json();
+        return data;
       } catch (error) {
-        console.error('Error incrementing stock:', error);
+        console.error('Error fetching product details:', error);
+        return null;
       }
     }
 
     // Open Add Stock Modal
     function openAddStockModal() {
       document.getElementById('addStockModal').classList.remove('hidden');
+
+      // Add event listeners to fetch product details when product name and type are entered
+      const productNameInput = document.getElementById('productName');
+      const productTypeInput = document.getElementById('productType');
+      const pricePerUnitInput = document.getElementById('pricePerUnit');
+
+      productNameInput.addEventListener('blur', async () => {
+        const productName = productNameInput.value;
+        const productType = productTypeInput.value;
+
+        if (productName && productType) {
+          const productDetails = await fetchProductDetails(productName, productType);
+          if (productDetails) {
+            pricePerUnitInput.value = productDetails.selling_price;
+          }
+        }
+      });
+
+      productTypeInput.addEventListener('blur', async () => {
+        const productName = productNameInput.value;
+        const productType = productTypeInput.value;
+
+        if (productName && productType) {
+          const productDetails = await fetchProductDetails(productName, productType);
+          if (productDetails) {
+            pricePerUnitInput.value = productDetails.selling_price;
+          }
+        }
+      });
     }
 
     // Close Modal
@@ -302,10 +325,10 @@
     // Add Stock
     document.getElementById('addStockForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const productName = e.target[0].value;
-      const productType = e.target[1].value;
-      const quantity = parseFloat(e.target[2].value);
-      const pricePerUnit = parseFloat(e.target[3].value);
+      const productName = document.getElementById('productName').value;
+      const productType = document.getElementById('productType').value;
+      const quantity = parseFloat(document.getElementById('quantity').value);
+      const pricePerUnit = parseFloat(document.getElementById('pricePerUnit').value);
 
       try {
         const response = await fetch(`${backendUrl}/stock/`, {
