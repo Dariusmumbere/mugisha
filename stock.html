@@ -470,8 +470,9 @@
     }
   }
 
-  // Initialize
-  fetchStock();
+  document.addEventListener('DOMContentLoaded', function () {
+    fetchStock(); // Fetch and display stock items when the page loads
+  });
 </script>
 </body>
 </html>
