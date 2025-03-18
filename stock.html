@@ -260,21 +260,6 @@
     </div>
   </div>
 
-  <!-- Edit Stock Modal -->
-  <div id="editStockModal" class="modal-overlay hidden">
-    <div class="modal-content">
-      <h2>Edit Stock</h2>
-      <form id="editStockForm">
-        <input type="hidden" id="editProductName">
-        <input type="hidden" id="editProductType">
-        <input type="number" id="editQuantity" placeholder="Quantity" required>
-        <input type="number" id="editPricePerUnit" placeholder="Price Per Unit" required>
-        <button type="submit">Update Stock</button>
-      </form>
-      <button class="close-btn" onclick="closeModal('editStockModal')">Close</button>
-    </div>
-  </div>
-
 <script>
   const backendUrl = 'https://man-m681.onrender.com'; // Replace with your backend URL
 
@@ -307,9 +292,6 @@
             </button>
             <button class="decrement-btn" onclick="decrementStock('${item.product_name}', '${item.product_type}')">
               <i class="fas fa-minus"></i> Decrement
-            </button>
-            <button class="edit-btn" onclick="editStockItem('${item.product_name}', '${item.product_type}', ${item.quantity}, ${item.price_per_unit})">
-              <i class="fas fa-edit"></i> Edit
             </button>
             <button class="delete-btn" onclick="deleteStockItem('${item.product_name}', '${item.product_type}')">
               <i class="fas fa-trash"></i> Delete
