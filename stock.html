@@ -371,36 +371,23 @@
   });
 
   // Increment Stock
-  async function incrementStock(productName, productType) {
-    const quantity = prompt(`Enter the quantity to increment for ${productName}:`);
-    if (quantity === null || isNaN(quantity) || quantity <= 0) {
-      alert('Invalid quantity');
-      return;
-    }
+async function incrementStock(productName, productType) {
+  try {
+    const response = await fetch(`${backendUrl}/stock/${productName}/${productType}/increment`, {
+      method: 'PUT',
+    });
 
-    try {
-      const response = await fetch(`${backendUrl}/stock/increment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          product_name: productName,
-          product_type: productType,
-          quantity: parseFloat(quantity),
-        }),
-      });
-
-      if (response.ok) {
-        alert('Stock incremented successfully!');
-        fetchStock();
-      } else {
-        alert('Failed to increment stock');
-      }
-    } catch (error) {
-      console.error('Error incrementing stock:', error);
+    if (response.ok) {
+      alert('Stock quantity incremented successfully!');
+      fetchStock(); // Refresh the stock table
+    } else {
+      alert('Failed to increment stock');
     }
+  } catch (error) {
+    console.error('Error incrementing stock:', error);
   }
+}
+
 
   // Edit Stock Item
   async function editStockItem(productName, productType, currentQuantity, currentPrice) {
