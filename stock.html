@@ -179,6 +179,33 @@
     .hidden {
       display: none;
     }
+
+    /* Dropdown Styles */
+    .dropdown {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #f9f9f9;
+      width: 100%;
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      z-index: 1;
+    }
+
+    .dropdown-content div {
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .dropdown-content div:hover {
+      background-color: #f1f1f1;
+    }
   </style>
 </head>
 <body>
@@ -212,10 +239,13 @@
     <div class="modal-content">
       <h2>Add New Stock</h2>
       <form id="addStockForm">
-        <input type="text" id="productName" placeholder="Product Name" required>
-        <input type="text" id="productType" placeholder="Product Type" required>
+        <div class="dropdown">
+          <input type="text" id="productName" placeholder="Product Name" onfocus="fetchProducts()" required>
+          <div id="productDropdown" class="dropdown-content"></div>
+        </div>
+        <input type="text" id="productType" placeholder="Product Type" readonly>
         <input type="number" id="quantity" placeholder="Quantity" required>
-        <input type="number" id="pricePerUnit" placeholder="Price Per Unit" required>
+        <input type="number" id="pricePerUnit" placeholder="Price Per Unit" readonly>
         <button type="submit">Add Stock</button>
       </form>
       <button class="close-btn" onclick="closeModal('addStockModal')">Close</button>
@@ -271,50 +301,29 @@
       }
     }
 
-    // Function to fetch product details
-    async function fetchProductDetails(productName, productType) {
+    // Fetch all products for dropdown
+    async function fetchProducts() {
       try {
-        const response = await fetch(`${backendUrl}/products/${productName}/${productType}`);
+        const response = await fetch(`${backendUrl}/products/`);
         const data = await response.json();
-        return data;
+        const dropdown = document.getElementById('productDropdown');
+        dropdown.innerHTML = data.products.map(product => `
+          <div onclick="selectProduct('${product.name}', '${product.type}', ${product.selling_price})">
+            ${product.name}
+          </div>
+        `).join('');
+        dropdown.style.display = 'block';
       } catch (error) {
-        console.error('Error fetching product details:', error);
-        return null;
+        console.error('Error fetching products:', error);
       }
     }
 
-    // Open Add Stock Modal
-    function openAddStockModal() {
-      document.getElementById('addStockModal').classList.remove('hidden');
-
-      // Add event listeners to fetch product details when product name and type are entered
-      const productNameInput = document.getElementById('productName');
-      const productTypeInput = document.getElementById('productType');
-      const pricePerUnitInput = document.getElementById('pricePerUnit');
-
-      productNameInput.addEventListener('blur', async () => {
-        const productName = productNameInput.value;
-        const productType = productTypeInput.value;
-
-        if (productName && productType) {
-          const productDetails = await fetchProductDetails(productName, productType);
-          if (productDetails) {
-            pricePerUnitInput.value = productDetails.selling_price;
-          }
-        }
-      });
-
-      productTypeInput.addEventListener('blur', async () => {
-        const productName = productNameInput.value;
-        const productType = productTypeInput.value;
-
-        if (productName && productType) {
-          const productDetails = await fetchProductDetails(productName, productType);
-          if (productDetails) {
-            pricePerUnitInput.value = productDetails.selling_price;
-          }
-        }
-      });
+    // Select a product from the dropdown
+    function selectProduct(name, type, price) {
+      document.getElementById('productName').value = name;
+      document.getElementById('productType').value = type;
+      document.getElementById('pricePerUnit').value = price;
+      document.getElementById('productDropdown').style.display = 'none';
     }
 
     // Close Modal
@@ -355,65 +364,6 @@
         console.error('Error adding stock:', error);
       }
     });
-
-    // Edit Stock
-    function editStockItem(productName, productType, quantity, pricePerUnit) {
-      document.getElementById('editStockModal').classList.remove('hidden');
-      document.getElementById('editProductName').value = productName;
-      document.getElementById('editProductType').value = productType;
-      document.getElementById('editQuantity').value = quantity;
-      document.getElementById('editPricePerUnit').value = pricePerUnit;
-
-      const form = document.getElementById('editStockForm');
-      form.onsubmit = async (e) => {
-        e.preventDefault();
-        const updatedQuantity = parseFloat(document.getElementById('editQuantity').value);
-        const updatedPricePerUnit = parseFloat(document.getElementById('editPricePerUnit').value);
-
-        try {
-          const response = await fetch(`${backendUrl}/stock/${productName}/${productType}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              quantity: updatedQuantity,
-              price_per_unit: updatedPricePerUnit,
-            }),
-          });
-
-          if (response.ok) {
-            alert('Stock updated successfully!');
-            closeModal('editStockModal');
-            fetchStock();
-          } else {
-            alert('Failed to update stock');
-          }
-        } catch (error) {
-          console.error('Error updating stock:', error);
-        }
-      };
-    }
-
-    // Delete Stock
-    async function deleteStockItem(productName, productType) {
-      if (confirm(`Are you sure you want to delete ${productName} (${productType})?`)) {
-        try {
-          const response = await fetch(`${backendUrl}/stock/${productName}/${productType}`, {
-            method: 'DELETE',
-          });
-
-          if (response.ok) {
-            alert('Stock deleted successfully!');
-            fetchStock();
-          } else {
-            alert('Failed to delete stock');
-          }
-        } catch (error) {
-          console.error('Error deleting stock:', error);
-        }
-      }
-    }
 
     // Initialize
     fetchStock();
