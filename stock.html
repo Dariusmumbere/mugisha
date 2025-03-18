@@ -319,7 +319,7 @@
       const dropdown = document.getElementById('productDropdown');
       dropdown.innerHTML = data.products.map(product => `
         <div onclick="selectProduct('${product.name}', '${product.type}', ${product.selling_price})">
-          ${product.name}
+          ${product.name} (${product.type}) <!-- Display product name with type in brackets -->
         </div>
       `).join('');
       dropdown.style.display = 'block';
@@ -369,6 +369,109 @@
       console.error('Error adding stock:', error);
     }
   });
+
+  // Increment Stock
+  async function incrementStock(productName, productType) {
+    const quantity = prompt(`Enter the quantity to increment for ${productName}:`);
+    if (quantity === null || isNaN(quantity) || quantity <= 0) {
+      alert('Invalid quantity');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${backendUrl}/stock/increment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          product_name: productName,
+          product_type: productType,
+          quantity: parseFloat(quantity),
+        }),
+      });
+
+      if (response.ok) {
+        alert('Stock incremented successfully!');
+        fetchStock();
+      } else {
+        alert('Failed to increment stock');
+      }
+    } catch (error) {
+      console.error('Error incrementing stock:', error);
+    }
+  }
+
+  // Edit Stock Item
+  async function editStockItem(productName, productType, currentQuantity, currentPrice) {
+    document.getElementById('editProductName').value = productName;
+    document.getElementById('editProductType').value = productType;
+    document.getElementById('editQuantity').value = currentQuantity;
+    document.getElementById('editPricePerUnit').value = currentPrice;
+    document.getElementById('editStockModal').classList.remove('hidden');
+  }
+
+  // Submit Edit Stock Form
+  document.getElementById('editStockForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const productName = document.getElementById('editProductName').value;
+    const productType = document.getElementById('editProductType').value;
+    const quantity = parseFloat(document.getElementById('editQuantity').value);
+    const pricePerUnit = parseFloat(document.getElementById('editPricePerUnit').value);
+
+    try {
+      const response = await fetch(`${backendUrl}/stock/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          product_name: productName,
+          product_type: productType,
+          quantity: quantity,
+          price_per_unit: pricePerUnit,
+        }),
+      });
+
+      if (response.ok) {
+        alert('Stock updated successfully!');
+        closeModal('editStockModal');
+        fetchStock();
+      } else {
+        alert('Failed to update stock');
+      }
+    } catch (error) {
+      console.error('Error updating stock:', error);
+    }
+  });
+
+  // Delete Stock Item
+  async function deleteStockItem(productName, productType) {
+    const confirmDelete = confirm(`Are you sure you want to delete ${productName}?`);
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch(`${backendUrl}/stock/delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          product_name: productName,
+          product_type: productType,
+        }),
+      });
+
+      if (response.ok) {
+        alert('Stock deleted successfully!');
+        fetchStock();
+      } else {
+        alert('Failed to delete stock');
+      }
+    } catch (error) {
+      console.error('Error deleting stock:', error);
+    }
+  }
 
   // Initialize
   fetchStock();
