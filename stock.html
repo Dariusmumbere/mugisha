@@ -318,7 +318,7 @@
       const data = await response.json();
       const dropdown = document.getElementById('productDropdown');
       dropdown.innerHTML = data.products.map(product => `
-        <div onclick="selectProduct('${product.name}', '${product.type}', ${product.selling_price})">
+        <div onclick="selectProduct('${product.name}', '${product.type}', ${product.buying_price})">
           ${product.name} (${product.type}) <!-- Display product name with type in brackets -->
         </div>
       `).join('');
