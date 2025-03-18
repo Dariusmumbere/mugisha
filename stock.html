@@ -267,106 +267,111 @@
     </div>
   </div>
 
-  <script>
-    const backendUrl = 'https://man-m681.onrender.com'; // Replace with your backend URL
+ <script>
+  const backendUrl = 'https://man-m681.onrender.com'; // Replace with your backend URL
 
-    // Fetch and display stock items
-    async function fetchStock() {
-      try {
-        const response = await fetch(`${backendUrl}/stock/`);
-        const data = await response.json();
-        const stockTableBody = document.getElementById('stockTableBody');
-        stockTableBody.innerHTML = data.stock.map(item => `
-          <tr>
-            <td>${item.product_name}</td>
-            <td>${item.product_type}</td>
-            <td>${item.quantity}</td>
-            <td>UGX ${item.price_per_unit.toLocaleString()}</td>
-            <td>UGX ${(item.quantity * item.price_per_unit).toLocaleString()}</td>
-            <td class="actions">
-              <button class="increment-btn" onclick="incrementStock('${item.product_name}', '${item.product_type}')">
-                <i class="fas fa-plus"></i> Increment
-              </button>
-              <button class="edit-btn" onclick="editStockItem('${item.product_name}', '${item.product_type}', ${item.quantity}, ${item.price_per_unit})">
-                <i class="fas fa-edit"></i> Edit
-              </button>
-              <button class="delete-btn" onclick="deleteStockItem('${item.product_name}', '${item.product_type}')">
-                <i class="fas fa-trash"></i> Delete
-              </button>
-            </td>
-          </tr>
-        `).join('');
-      } catch (error) {
-        console.error('Error fetching stock:', error);
+  // Function to open the Add Stock Modal
+  function openAddStockModal() {
+    document.getElementById('addStockModal').classList.remove('hidden');
+  }
+
+  // Function to close any modal
+  function closeModal(modalId) {
+    document.getElementById(modalId).classList.add('hidden');
+  }
+
+  // Fetch and display stock items
+  async function fetchStock() {
+    try {
+      const response = await fetch(`${backendUrl}/stock/`);
+      const data = await response.json();
+      const stockTableBody = document.getElementById('stockTableBody');
+      stockTableBody.innerHTML = data.stock.map(item => `
+        <tr>
+          <td>${item.product_name}</td>
+          <td>${item.product_type}</td>
+          <td>${item.quantity}</td>
+          <td>UGX ${item.price_per_unit.toLocaleString()}</td>
+          <td>UGX ${(item.quantity * item.price_per_unit).toLocaleString()}</td>
+          <td class="actions">
+            <button class="increment-btn" onclick="incrementStock('${item.product_name}', '${item.product_type}')">
+              <i class="fas fa-plus"></i> Increment
+            </button>
+            <button class="edit-btn" onclick="editStockItem('${item.product_name}', '${item.product_type}', ${item.quantity}, ${item.price_per_unit})">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button class="delete-btn" onclick="deleteStockItem('${item.product_name}', '${item.product_type}')">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    } catch (error) {
+      console.error('Error fetching stock:', error);
+    }
+  }
+
+  // Fetch all products for dropdown
+  async function fetchProducts() {
+    try {
+      const response = await fetch(`${backendUrl}/products/`);
+      const data = await response.json();
+      const dropdown = document.getElementById('productDropdown');
+      dropdown.innerHTML = data.products.map(product => `
+        <div onclick="selectProduct('${product.name}', '${product.type}', ${product.selling_price})">
+          ${product.name}
+        </div>
+      `).join('');
+      dropdown.style.display = 'block';
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  }
+
+  // Select a product from the dropdown
+  function selectProduct(name, type, price) {
+    document.getElementById('productName').value = name;
+    document.getElementById('productType').value = type;
+    document.getElementById('pricePerUnit').value = price;
+    document.getElementById('productDropdown').style.display = 'none';
+  }
+
+  // Add Stock
+  document.getElementById('addStockForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const productName = document.getElementById('productName').value;
+    const productType = document.getElementById('productType').value;
+    const quantity = parseFloat(document.getElementById('quantity').value);
+    const pricePerUnit = parseFloat(document.getElementById('pricePerUnit').value);
+
+    try {
+      const response = await fetch(`${backendUrl}/stock/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          product_name: productName,
+          product_type: productType,
+          quantity: quantity,
+          price_per_unit: pricePerUnit,
+        }),
+      });
+
+      if (response.ok) {
+        alert('Stock added successfully!');
+        closeModal('addStockModal');
+        fetchStock();
+      } else {
+        alert('Failed to add stock');
       }
+    } catch (error) {
+      console.error('Error adding stock:', error);
     }
+  });
 
-    // Fetch all products for dropdown
-    async function fetchProducts() {
-      try {
-        const response = await fetch(`${backendUrl}/products/`);
-        const data = await response.json();
-        const dropdown = document.getElementById('productDropdown');
-        dropdown.innerHTML = data.products.map(product => `
-          <div onclick="selectProduct('${product.name}', '${product.type}', ${product.selling_price})">
-            ${product.name}
-          </div>
-        `).join('');
-        dropdown.style.display = 'block';
-      } catch (error) {
-        console.error('Error fetching products:', error);
-      }
-    }
-
-    // Select a product from the dropdown
-    function selectProduct(name, type, price) {
-      document.getElementById('productName').value = name;
-      document.getElementById('productType').value = type;
-      document.getElementById('pricePerUnit').value = price;
-      document.getElementById('productDropdown').style.display = 'none';
-    }
-
-    // Close Modal
-    function closeModal(modalId) {
-      document.getElementById(modalId).classList.add('hidden');
-    }
-
-    // Add Stock
-    document.getElementById('addStockForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const productName = document.getElementById('productName').value;
-      const productType = document.getElementById('productType').value;
-      const quantity = parseFloat(document.getElementById('quantity').value);
-      const pricePerUnit = parseFloat(document.getElementById('pricePerUnit').value);
-
-      try {
-        const response = await fetch(`${backendUrl}/stock/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            product_name: productName,
-            product_type: productType,
-            quantity: quantity,
-            price_per_unit: pricePerUnit,
-          }),
-        });
-
-        if (response.ok) {
-          alert('Stock added successfully!');
-          closeModal('addStockModal');
-          fetchStock();
-        } else {
-          alert('Failed to add stock');
-        }
-      } catch (error) {
-        console.error('Error adding stock:', error);
-      }
-    });
-
-    // Initialize
-    fetchStock();
-  </script>
+  // Initialize
+  fetchStock();
+</script>
 </body>
 </html>
