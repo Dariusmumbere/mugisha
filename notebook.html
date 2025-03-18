@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Notebook</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold text-center mb-8">Modern Notebook</h1>
+        
+        <!-- Diary Section -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Diary</h2>
+            <textarea id="diaryEntry" class="w-full p-2 border rounded-lg mb-4" placeholder="Write your diary entry here..."></textarea>
+            <button onclick="addDiaryEntry()" class="bg-blue-500 text-white px-4 py-2 rounded-lg">Add Entry</button>
+        </div>
+
+        <!-- To-Do List Section -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold mb-4">To-Do List</h2>
+            <div class="mb-4">
+                <input id="taskTitle" class="p-2 border rounded-lg w-full mb-2" placeholder="Task Title">
+                <textarea id="taskContent" class="w-full p-2 border rounded-lg mb-2" placeholder="Task Content"></textarea>
+                <input id="taskDate" type="date" class="p-2 border rounded-lg w-full mb-2">
+                <button onclick="addTask()" class="bg-green-500 text-white px-4 py-2 rounded-lg">Add Task</button>
+            </div>
+
+            <!-- Task Lists -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Pending Tasks -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4">Pending</h3>
+                    <div id="pendingTasks" class="space-y-2"></div>
+                </div>
+
+                <!-- Ongoing Tasks -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4">Ongoing</h3>
+                    <div id="ongoingTasks" class="space-y-2"></div>
+                </div>
+
+                <!-- Completed Tasks -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4">Completed</h3>
+                    <div id="completedTasks" class="space-y-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const backendUrl = "https://man-m681.onrender.com";
+
+        // Function to add a diary entry
+        async function addDiaryEntry() {
+            const content = document.getElementById('diaryEntry').value;
+            const date = new Date().toISOString().split('T')[0];
+
+            const response = await fetch(`${backendUrl}/diary/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ content, date }),
+            });
+
+            if (response.ok) {
+                alert('Diary entry added successfully');
+                document.getElementById('diaryEntry').value = '';
+                fetchDiaryEntries();
+            } else {
+                alert('Failed to add diary entry');
+            }
+        }
+
+        // Function to fetch diary entries
+        async function fetchDiaryEntries() {
+            const response = await fetch(`${backendUrl}/diary/`);
+            const data = await response.json();
+            console.log(data.entries); // You can display these entries in the UI as needed
+        }
+
+        // Function to add a task
+        async function addTask() {
+            const title = document.getElementById('taskTitle').value;
+            const content = document.getElementById('taskContent').value;
+            const date = document.getElementById('taskDate').value;
+            const status = 'pending';
+
+            const response = await fetch(`${backendUrl}/tasks/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ title, content, date, status }),
+            });
+
+            if (response.ok) {
+                alert('Task added successfully');
+                document.getElementById('taskTitle').value = '';
+                document.getElementById('taskContent').value = '';
+                document.getElementById('taskDate').value = '';
+                fetchTasks();
+            } else {
+                alert('Failed to add task');
+            }
+        }
+
+        // Function to fetch tasks
+        async function fetchTasks() {
+            const response = await fetch(`${backendUrl}/tasks/`);
+            const data = await response.json();
+            const tasks = data.tasks;
+
+            const pendingTasks = tasks.filter(task => task.status === 'pending');
+            const ongoingTasks = tasks.filter(task => task.status === 'ongoing'); // Fix typo if necessary
+            const completedTasks = tasks.filter(task => task.status === 'completed');
+
+            displayTasks(pendingTasks, 'pendingTasks');
+            displayTasks(ongoingTasks, 'ongoingTasks');
+            displayTasks(completedTasks, 'completedTasks');
+        }
+
+        // Function to display tasks
+        function displayTasks(tasks, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            tasks.forEach(task => {
+                const taskElement = document.createElement('div');
+                taskElement.className = 'bg-white p-4 rounded-lg shadow-sm';
+                taskElement.innerHTML = `
+                    <h4 class="font-semibold">${task.title}</h4>
+                    <p class="text-sm text-gray-600">${task.content}</p>
+                    <p class="text-xs text-gray-500">${task.date}</p>
+                    <div class="mt-2 space-x-2">
+                        ${task.status !== 'completed' ? `<button onclick="updateTaskStatus(${task.id}, '${task.status === 'pending' ? 'ongoing' : 'completed'}')" class="text-sm text-blue-500">${task.status === 'pending' ? 'Start' : 'Complete'}</button>` : ''}
+                    </div>
+                `;
+                container.appendChild(taskElement);
+            });
+        }
+
+        // Function to update task status
+        async function updateTaskStatus(taskId, status) {
+            const response = await fetch(`${backendUrl}/tasks/${taskId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status }),
+            });
+
+            if (response.ok) {
+                alert('Task status updated successfully');
+                fetchTasks();
+            } else {
+                alert('Failed to update task status');
+            }
+        }
+
+        // Fetch tasks and diary entries on page load
+        fetchTasks();
+        fetchDiaryEntries();
+    </script>
+</body>
+</html>
