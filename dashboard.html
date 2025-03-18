@@ -424,9 +424,7 @@
     <div class="flex items-center">
       <!-- Notification Dropdown -->
       <div class="notification-dropdown relative mr-4">
-        <div class="action-item" onclick="window.location.href='notebook.html'">
-          <i class="fas fa-book text-gray-800 dark:text-yellow-400"></i>
-        </div>
+        
         <div class="action-item" onclick="toggleNotifications()">
           <i class="fas fa-bell text-gray-800 dark:text-yellow-400"></i>
           <span class="notification-badge" id="notification-count">0</span>
@@ -435,6 +433,9 @@
           <!-- Notifications will be dynamically added here -->
         </div>
       </div>
+      <div class="action-item" onclick="window.location.href='notebook.html'">
+          <i class="fas fa-book text-gray-800 dark:text-yellow-400"></i>
+        </div>
       <!-- Theme Toggle Button -->
       <button id="themeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700">
         <i id="themeIcon" class="fas fa-moon text-gray-800 dark:text-yellow-400"></i>
