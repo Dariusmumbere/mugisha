@@ -101,6 +101,14 @@
       background-color: #0d9e6e; /* Darker green */
     }
 
+    .decrement-btn {
+      background-color: #ef4444; /* Red */
+    }
+
+    .decrement-btn:hover {
+      background-color: #dc2626; /* Darker red */
+    }
+
     .edit-btn {
       background-color: #2563eb; /* Blue */
     }
@@ -297,6 +305,9 @@
             <button class="increment-btn" onclick="incrementStock('${item.product_name}', '${item.product_type}')">
               <i class="fas fa-plus"></i> Increment
             </button>
+            <button class="decrement-btn" onclick="decrementStock('${item.product_name}', '${item.product_type}')">
+              <i class="fas fa-minus"></i> Decrement
+            </button>
             <button class="edit-btn" onclick="editStockItem('${item.product_name}', '${item.product_type}', ${item.quantity}, ${item.price_per_unit})">
               <i class="fas fa-edit"></i> Edit
             </button>
@@ -371,23 +382,40 @@
   });
 
   // Increment Stock
-async function incrementStock(productName, productType) {
-  try {
-    const response = await fetch(`${backendUrl}/stock/${productName}/${productType}/increment`, {
-      method: 'PUT',
-    });
+  async function incrementStock(productName, productType) {
+    try {
+      const response = await fetch(`${backendUrl}/stock/${productName}/${productType}/increment`, {
+        method: 'PUT',
+      });
 
-    if (response.ok) {
-      alert('Stock quantity incremented successfully!');
-      fetchStock(); // Refresh the stock table
-    } else {
-      alert('Failed to increment stock');
+      if (response.ok) {
+        alert('Stock quantity incremented successfully!');
+        fetchStock(); // Refresh the stock table
+      } else {
+        alert('Failed to increment stock');
+      }
+    } catch (error) {
+      console.error('Error incrementing stock:', error);
     }
-  } catch (error) {
-    console.error('Error incrementing stock:', error);
   }
-}
 
+  // Decrement Stock
+  async function decrementStock(productName, productType) {
+    try {
+      const response = await fetch(`${backendUrl}/stock/${productName}/${productType}/decrement`, {
+        method: 'PUT',
+      });
+
+      if (response.ok) {
+        alert('Stock quantity decremented successfully!');
+        fetchStock(); // Refresh the stock table
+      } else {
+        alert('Failed to decrement stock');
+      }
+    } catch (error) {
+      console.error('Error decrementing stock:', error);
+    }
+  }
 
   // Edit Stock Item
   async function editStockItem(productName, productType, currentQuantity, currentPrice) {
