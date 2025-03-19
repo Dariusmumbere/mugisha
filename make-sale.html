@@ -567,7 +567,7 @@
   return words.trim() + " Shillings Only";
 }
 
-   async function generateReceipt() {
+  async function generateReceipt() {
   if (currentSale.length === 0) {
     alert('No items in the sale!');
     return;
@@ -593,6 +593,7 @@
     receipt_number: receiptNumber,
     items: currentSale.map(item => ({
       name: item.itemName,
+      description: item.description || "No description", // Include description
       type: item.type || "product",
       quantity: item.quantity,
       unit_price: item.unitPrice,
@@ -661,12 +662,12 @@
         yPos += 10;
 
         currentSale.forEach((item) => {
-          doc.text(item.itemName, 10, yPos);
-          doc.text(`(${item.type})`, 10, yPos + 5);
+          doc.text(item.itemName, 10, yPos); // Product name
+          doc.text(`(${item.description})`, 10, yPos + 5); // Description below product name
           doc.text(item.quantity.toString(), 100, yPos);
           doc.text(`Ugx.${item.unitPrice.toFixed(2)}`, 130, yPos);
           doc.text(`Ugx.${item.total.toFixed(2)}`, 170, yPos);
-          yPos += 15;
+          yPos += 15; // Adjust spacing to accommodate description
         });
 
         // Total Paid and Balance (Inline)
@@ -689,7 +690,8 @@
         yPos += 10;
         doc.setFontSize(10);
         doc.text("Thank you for your purchase!", 10, yPos);
-        doc.text("Contact: +256394812457 | Email: info@ni-computer-solutions.tech | website: https://ni-computer-solutions.tech", 10, yPos + 6);
+        doc.text("Contact: +256394812457 | Email: info@ni-computer-solutions.tech", 10, yPos + 6);
+        doc.text("website: https://ni-computer-solutions.tech", 10, yPos);
       };
 
       // Generate the first receipt
