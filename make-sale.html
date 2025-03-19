@@ -196,19 +196,20 @@
       </div>
       <!-- Sale Table -->
       <table class="sale-table">
-        <thead>
-          <tr>
-            <th>Item Name</th>
-            <th>Quantity</th>
-            <th>Unit Price</th>
-            <th>Total</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="saleTableBody">
-          <!-- Sale items will be dynamically added here -->
-        </tbody>
-      </table>
+  <thead>
+    <tr>
+      <th>Item Name</th>
+      <th>Description</th> <!-- Add description column -->
+      <th>Quantity</th>
+      <th>Unit Price</th>
+      <th>Total</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody id="saleTableBody">
+    <!-- Sale items will be dynamically added here -->
+  </tbody>
+</table>
       <!-- Add Item and Select Service Buttons -->
       <div class="flex gap-2 mt-4">
         <button onclick="openAddItemModal()" class="gray-button">
@@ -372,10 +373,14 @@
 
     // Populate Item Select Dropdown
     function populateItemSelect() {
-      const itemSelect = document.getElementById('itemSelect');
-      itemSelect.innerHTML = '<option value="" disabled selected>Select Item</option>' +
-        products.map(product => `<option value="${product.name}" data-type="${product.type}">${product.name} (${product.type})</option>`).join('');
-    }
+  const itemSelect = document.getElementById('itemSelect');
+  itemSelect.innerHTML = '<option value="" disabled selected>Select Item</option>' +
+    products.map(product => `
+      <option value="${product.name}" data-type="${product.type}" data-description="${product.description}">
+        ${product.name} (${product.type})
+      </option>
+    `).join('');
+}
 
     // Open Add Item Modal
     function openAddItemModal() {
@@ -385,47 +390,54 @@
 
     // Add Item to Sale
     document.getElementById('addItemForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const itemName = document.getElementById('itemSelect').value;
-      const quantity = parseFloat(document.getElementById('itemQuantity').value);
+  e.preventDefault();
+  const itemName = document.getElementById('itemSelect').value;
+  const quantity = parseFloat(document.getElementById('itemQuantity').value);
 
-      // Fetch product details
-      const product = products.find(p => p.name === itemName);
-      if (!product) {
-        alert('Product not found!');
-        return;
-      }
+  // Fetch product details
+  const product = products.find(p => p.name === itemName);
+  if (!product) {
+    alert('Product not found!');
+    return;
+  }
 
-      // Fetch stock details
-      const stockItem = stockItems.find(item => item.product_name === itemName);
-      if (!stockItem || stockItem.quantity < quantity) {
-        alert('Insufficient stock!');
-        return;
-      }
+  // Fetch stock details
+  const stockItem = stockItems.find(item => item.product_name === itemName);
+  if (!stockItem || stockItem.quantity < quantity) {
+    alert('Insufficient stock!');
+    return;
+  }
 
-      const total = product.selling_price * quantity;
-      currentSale.push({ itemName, quantity, unitPrice: product.selling_price, total });
-      updateSaleTable();
-      closeModal('addItemModal');
-    });
+  const total = product.selling_price * quantity;
+  currentSale.push({ 
+    itemName, 
+    description: product.description, // Add description
+    quantity, 
+    unitPrice: product.selling_price, 
+    total 
+  });
+  updateSaleTable();
+  closeModal('addItemModal');
+});
 
     // Update Sale Table
     function updateSaleTable() {
-      const saleTableBody = document.getElementById('saleTableBody');
-      saleTableBody.innerHTML = currentSale.map((item, index) => `
-        <tr>
-          <td>${item.itemName}</td>
-          <td>${item.quantity}</td>
-          <td><input type="number" class="editable-unit-price" onchange="updateUnitPrice(${index}, this.value)" placeholder="${item.unitPrice.toFixed(2)}"></td>
-          <td>${item.total.toFixed(2)}</td>
-          <td><button onclick="removeItem(${index})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button></td>
-        </tr>
-      `).join('');
+  const saleTableBody = document.getElementById('saleTableBody');
+  saleTableBody.innerHTML = currentSale.map((item, index) => `
+    <tr>
+      <td>${item.itemName}</td>
+      <td>${item.description || 'N/A'}</td> <!-- Add description column -->
+      <td>${item.quantity}</td>
+      <td><input type="number" class="editable-unit-price" onchange="updateUnitPrice(${index}, this.value)" placeholder="${item.unitPrice.toFixed(2)}"></td>
+      <td>${item.total.toFixed(2)}</td>
+      <td><button onclick="removeItem(${index})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button></td>
+    </tr>
+  `).join('');
 
-      // Update Total
-      const total = currentSale.reduce((sum, item) => sum + item.total, 0);
-      document.getElementById('saleTotal').textContent = total.toFixed(2);
-    }
+  // Update Total
+  const total = currentSale.reduce((sum, item) => sum + item.total, 0);
+  document.getElementById('saleTotal').textContent = total.toFixed(2);
+}
 
     // Update Unit Price
     function updateUnitPrice(index, newPrice) {
@@ -775,8 +787,13 @@ async function populateServiceSelect() {
   const services = await fetchServices();
   const serviceSelect = document.getElementById('serviceSelect');
   serviceSelect.innerHTML = '<option value="" disabled selected>Select Service</option>' +
-    services.map(service => `<option value="${service.name}" data-price="${service.price}">${service.name} (Ugx.${service.price})</option>`).join('');
+    services.map(service => `
+      <option value="${service.name}" data-price="${service.price}" data-description="${service.description}">
+        ${service.name} (Ugx.${service.price})
+      </option>
+    `).join('');
 }
+   
 
 // Open Select Service Modal
 async function openSelectServiceModal() {
@@ -786,25 +803,34 @@ async function openSelectServiceModal() {
 
 // Add Service to Sale
 document.getElementById('selectServiceForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const serviceName = document.getElementById('serviceSelect').value;
-    const quantity = parseFloat(document.getElementById('serviceQuantity').value);
+  e.preventDefault();
+  const serviceName = document.getElementById('serviceSelect').value;
+  const quantity = parseFloat(document.getElementById('serviceQuantity').value);
 
-    // Get the selected service's price
-    const serviceSelect = document.getElementById('serviceSelect');
-    const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
-    const unitPrice = parseFloat(selectedOption.getAttribute('data-price'));
+  // Get the selected service's price
+  const serviceSelect = document.getElementById('serviceSelect');
+  const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+  const unitPrice = parseFloat(selectedOption.getAttribute('data-price'));
+  const description = selectedOption.getAttribute('data-description'); // Add description
 
-    if (!serviceName || !quantity || isNaN(unitPrice)) {
-        alert('Please select a service and enter a valid quantity.');
-        return;
-    }
+  if (!serviceName || !quantity || isNaN(unitPrice)) {
+    alert('Please select a service and enter a valid quantity.');
+    return;
+  }
 
-    const total = unitPrice * quantity;
-    currentSale.push({ itemName: serviceName, type: "service", quantity, unitPrice, total });
-    updateSaleTable();
-    closeModal('selectServiceModal');
+  const total = unitPrice * quantity;
+  currentSale.push({ 
+    itemName: serviceName, 
+    type: "service", 
+    description, // Add description
+    quantity, 
+    unitPrice, 
+    total 
+  });
+  updateSaleTable();
+  closeModal('selectServiceModal');
 });
+    
     // Edit Sale
 async function editSale(saleId) {
   // Fetch the sale details by ID
