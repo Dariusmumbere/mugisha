@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+;<!DOCTYPE html>
 <html lang="en">
 <head>
   <style>
@@ -138,11 +138,6 @@
       border-radius: 8px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
-    #descriptionPromptModal textarea {
-  width: 100%;
-  height: 100px;
-  resize: none;
-}
   </style>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -312,17 +307,6 @@
       <button type="submit" class="gray-button">Add Service</button>
     </form>
     <button onclick="closeModal('selectServiceModal')" class="close-button mt-2">Close</button>
-  </div>
-</div>
-     <!-- Description Prompt Modal -->
-<div id="descriptionPromptModal" class="modal-overlay hidden">
-  <div class="modal-content">
-    <h3 class="text-lg font-semibold mb-4 dark:text-white">Enter Product Description</h3>
-    <form id="descriptionPromptForm">
-      <textarea id="productDescription" placeholder="Enter product description..." class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required></textarea>
-      <button type="submit" class="gray-button">Submit</button>
-    </form>
-    <button onclick="closeModal('descriptionPromptModal')" class="close-button mt-2">Close</button>
   </div>
 </div>
   <!-- JavaScript -->
@@ -571,7 +555,7 @@
   return words.trim() + " Shillings Only";
 }
 
-  async function generateReceipt() {
+   async function generateReceipt() {
   if (currentSale.length === 0) {
     alert('No items in the sale!');
     return;
@@ -582,126 +566,164 @@
     return;
   }
 
-  // Open the description prompt modal
-  document.getElementById('descriptionPromptModal').classList.remove('hidden');
+  const total = currentSale.reduce((sum, item) => sum + item.total, 0);
+
+  // Generate receipt number
+  const currentYear = new Date().getFullYear();
+  const receiptNumber = `${String(getNextReceiptNumber()).padStart(3, '0')}/${currentYear}`;
+
+  // Convert total to words
+  const amountInWords = numberToWords(Math.floor(total));
+
+  // Prepare the sale data
+  const saleData = {
+    client_name: selectedClient.name,
+    receipt_number: receiptNumber,
+    items: currentSale.map(item => ({
+      name: item.itemName,
+      type: item.type || "product",
+      quantity: item.quantity,
+      unit_price: item.unitPrice,
+      total: item.total,
+    })),
+    total_amount: total,
+  };
+
+  // Send the sale data to the backend
+  try {
+    const response = await fetch(`${backendUrl}/sales/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(saleData),
+    });
+
+    if (response.ok) {
+      alert('Sale created and stock updated successfully!');
+
+      // Generate the receipt PDF
+      const doc = new jsPDF();
+
+      // Add receipt styling
+      doc.setFont("Courier");
+      doc.setFontSize(12);
+
+      // Function to generate a single receipt
+      const generateSingleReceipt = (doc, yOffset) => {
+        // Header
+        doc.setFontSize(18);
+        doc.text("NDYAKURUNGI ITECH COMPUTER SOLUTIONS", 105, 10 + yOffset, null, null, 'center');
+        doc.setFontSize(14);
+
+        // Receipt Number (Left of the box)
+        doc.setTextColor(255, 0, 0);
+        doc.text(`No: ${receiptNumber}`, 10, 22 + yOffset);
+        doc.setTextColor(0, 0, 0);
+
+        // Box around "RECEIPT/TAX INVOICE"
+        doc.setDrawColor(0);
+        doc.rect(70, 16 + yOffset, 90, 10);
+        doc.text("RECEIPT/TAX INVOICE", 115, 22 + yOffset, null, null, 'center');
+
+        doc.setFontSize(12);
+        doc.text("Name it, we will provide & deliver it", 105, 30 + yOffset, null, null, 'center');
+        doc.text("Location: Kasese | TIN: 1003911766", 105, 36 + yOffset, null, null, 'center');
+
+        doc.text(generateDashes(190), 10, 42 + yOffset);
+
+        // Client Information (Inline)
+        const clientInfo = `Client Name: ${selectedClient.name}`;
+        doc.text(clientInfo, 10, 50 + yOffset);
+
+        // Date (Pushed to the right)
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 160, 58 + yOffset, null, null, 'right');
+        doc.text(generateDashes(190), 10, 64 + yOffset);
+
+        // Items Table
+        let yPos = 70 + yOffset;
+        doc.text("Item", 10, yPos);
+        doc.text("Qty", 100, yPos);
+        doc.text("Price", 130, yPos);
+        doc.text("Total", 170, yPos);
+        yPos += 10;
+
+        currentSale.forEach((item) => {
+          doc.text(item.itemName, 10, yPos);
+          doc.text(`(${item.type})`, 10, yPos + 5);
+          doc.text(item.quantity.toString(), 100, yPos);
+          doc.text(`Ugx.${item.unitPrice.toFixed(2)}`, 130, yPos);
+          doc.text(`Ugx.${item.total.toFixed(2)}`, 170, yPos);
+          yPos += 15;
+        });
+
+        // Total Paid and Balance (Inline)
+        doc.text(generateDashes(190), 10, yPos); // Full-width dashes
+        yPos += 10;
+        const totalPaidInfo = `Total Paid: ......................Balance: ......................`;
+        doc.text(totalPaidInfo, 10, yPos);
+        yPos += 10;
+        doc.text(`Total Bill in Words: ${amountInWords}`, 10, yPos);
+        yPos += 10;
+        doc.text("PAYMENT METHOD: Cash/Cheque", 10, yPos);
+        
+        // Signature and Stamp (Inline with dashes below)
+        yPos += 15;
+        doc.text("Client's Signature: ___________________", 10, yPos);
+        doc.text("Authorized Official: ___________________", 110, yPos);
+        yPos += 10;
+
+        // Footer
+        yPos += 10;
+        doc.setFontSize(10);
+        doc.text("Thank you for your purchase!", 10, yPos);
+        doc.text("Contact: +256394812457 | Email: info@ni-computer-solutions.tech | website: https://ni-computer-solutions.tech", 10, yPos + 6);
+      };
+
+      // Generate the first receipt
+      generateSingleReceipt(doc, 0);
+
+      // Save the PDF with the format "receipt_client_name.pdf"
+      const fileName = `receipt_${selectedClient.name.replace(/\s+/g, '_')}.pdf`;
+      doc.save(fileName);
+
+      // Clear the current sale
+      currentSale = [];
+      updateSaleTable();
+      fetchSalesHistory();
+    } else {
+      alert('Failed to create sale.');
+    }
+  } catch (error) {
+    console.error('Error creating sale:', error);
+    alert('Failed to create sale.');
+  }
+}
+    // Function to generate a string of dashes of a specific length
+function generateDashes(length) {
+    return '-'.repeat(length);
 }
 
-// Handle the description prompt form submission
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('descriptionPromptForm').addEventListener('submit', async (e) => {
-    e.preventDefault(); // Prevent the form from submitting and reloading the page
+// Function to generate the next receipt number
+let receiptCounter = 0; // This should be persisted in your backend or localStorage
+function getNextReceiptNumber() {
+    receiptCounter += 1;
+    // Save the counter to localStorage or backend for persistence
+    localStorage.setItem('receiptCounter', receiptCounter);
+    return receiptCounter;
+}
 
-    const description = document.getElementById('productDescription').value;
-
-    if (!description) {
-      alert('Please enter a description.');
-      return;
+// Initialize receipt counter from localStorage
+function initializeReceiptCounter() {
+    const savedCounter = localStorage.getItem('receiptCounter');
+    if (savedCounter) {
+        receiptCounter = parseInt(savedCounter, 10);
     }
+}
 
-    // Close the description prompt modal
-    closeModal('descriptionPromptModal');
-
-    // Proceed with generating the receipt
-    const total = currentSale.reduce((sum, item) => sum + item.total, 0);
-
-    // Generate receipt number
-    const currentYear = new Date().getFullYear();
-    const receiptNumber = `${String(getNextReceiptNumber()).padStart(3, '0')}/${currentYear}`;
-
-    // Convert total to words
-    const amountInWords = numberToWords(Math.floor(total));
-
-    // Generate the receipt PDF
-    const doc = new jsPDF();
-
-    // Add receipt styling
-    doc.setFont("Courier");
-    doc.setFontSize(12);
-
-    // Function to generate a single receipt
-    const generateSingleReceipt = (doc, yOffset) => {
-      // Header
-      doc.setFontSize(18);
-      doc.text("NDYAKURUNGI ITECH COMPUTER SOLUTIONS", 105, 10 + yOffset, null, null, 'center');
-      doc.setFontSize(14);
-
-      // Receipt Number (Left of the box)
-      doc.setTextColor(255, 0, 0);
-      doc.text(`No: ${receiptNumber}`, 10, 22 + yOffset);
-      doc.setTextColor(0, 0, 0);
-
-      // Box around "RECEIPT/TAX INVOICE"
-      doc.setDrawColor(0);
-      doc.rect(70, 16 + yOffset, 90, 10);
-      doc.text("RECEIPT/TAX INVOICE", 115, 22 + yOffset, null, null, 'center');
-
-      doc.setFontSize(12);
-      doc.text("Name it, we will provide & deliver it", 105, 30 + yOffset, null, null, 'center');
-      doc.text("Location: Kasese | TIN: 1003911766", 105, 36 + yOffset, null, null, 'center');
-
-      doc.text(generateDashes(190), 10, 42 + yOffset);
-
-      // Client Information (Inline)
-      const clientInfo = `Client Name: ${selectedClient.name}`;
-      doc.text(clientInfo, 10, 50 + yOffset);
-
-      // Date (Pushed to the right)
-      doc.text(`Date: ${new Date().toLocaleDateString()}`, 160, 58 + yOffset, null, null, 'right');
-      doc.text(generateDashes(190), 10, 64 + yOffset);
-
-      // Items Table
-      let yPos = 70 + yOffset;
-      doc.text("Item", 10, yPos);
-      doc.text("Qty", 100, yPos);
-      doc.text("Price", 130, yPos);
-      doc.text("Total", 170, yPos);
-      yPos += 10;
-
-      currentSale.forEach((item) => {
-        doc.text(item.itemName, 10, yPos);
-        doc.text(`(${description})`, 10, yPos + 5); // Add the description below the product name
-        doc.text(item.quantity.toString(), 100, yPos);
-        doc.text(`Ugx.${item.unitPrice.toFixed(2)}`, 130, yPos);
-        doc.text(`Ugx.${item.total.toFixed(2)}`, 170, yPos);
-        yPos += 15;
-      });
-
-      // Total Paid and Balance (Inline)
-      doc.text(generateDashes(190), 10, yPos); // Full-width dashes
-      yPos += 10;
-      const totalPaidInfo = `Total Paid: ......................Balance: ......................`;
-      doc.text(totalPaidInfo, 10, yPos);
-      yPos += 10;
-      doc.text(`Total Bill in Words: ${amountInWords}`, 10, yPos);
-      yPos += 10;
-      doc.text("PAYMENT METHOD: Cash/Cheque", 10, yPos);
-      
-      // Signature and Stamp (Inline with dashes below)
-      yPos += 15;
-      doc.text("Client's Signature: ___________________", 10, yPos);
-      doc.text("Authorized Official: ___________________", 110, yPos);
-      yPos += 10;
-
-      // Footer
-      yPos += 10;
-      doc.setFontSize(10);
-      doc.text("Thank you for your purchase!", 10, yPos);
-      doc.text("Contact: +256394812457 | Email: info@ni-computer-solutions.tech | website: https://ni-computer-solutions.tech", 10, yPos + 6);
-    };
-
-    // Generate the first receipt
-    generateSingleReceipt(doc, 0);
-
-    // Save the PDF with the format "receipt_client_name.pdf"
-    const fileName = `receipt_${selectedClient.name.replace(/\s+/g, '_')}.pdf`;
-    doc.save(fileName);
-
-    // Clear the current sale
-    currentSale = [];
-    updateSaleTable();
-    fetchSalesHistory();
-  });
-});
+// Call this function when the page loads
+initializeReceiptCounter();
+    
     // Fetch Sales History
     async function fetchSalesHistory() {
       try {
@@ -831,9 +853,6 @@ async function deleteSale(saleId) {
       alert('Failed to delete sale.');
     }
   }
-}
-    function closeModal(modalId) {
-  document.getElementById(modalId).classList.add('hidden');
 }
 
     // Initialize
