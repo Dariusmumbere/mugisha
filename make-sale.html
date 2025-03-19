@@ -376,7 +376,7 @@
   const itemSelect = document.getElementById('itemSelect');
   itemSelect.innerHTML = '<option value="" disabled selected>Select Item</option>' +
     products.map(product => `
-      <option value="${product.name}" data-type="${product.type}" data-description="${product.description}">
+      <option value="${product.name}" data-type="${product.type}" data-description="${product.type}">
         ${product.name} (${product.type})
       </option>
     `).join('');
@@ -411,7 +411,7 @@
   const total = product.selling_price * quantity;
   currentSale.push({ 
     itemName, 
-    description: product.description, // Add description
+    description: product.type, // Use product type as description
     quantity, 
     unitPrice: product.selling_price, 
     total 
