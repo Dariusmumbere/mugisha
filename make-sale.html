@@ -582,7 +582,6 @@
     items: currentSale.map(item => ({
       name: item.itemName,
       type: item.type || "product",
-      description: item.description || "",
       quantity: item.quantity,
       unit_price: item.unitPrice,
       total: item.total,
@@ -652,12 +651,6 @@
         currentSale.forEach((item) => {
           doc.text(item.itemName, 10, yPos);
           doc.text(`(${item.type})`, 10, yPos + 5);
-          if (item.type === 'service' && item.description) {
-            doc.text(`Description: ${item.description}`, 10, yPos + 10);
-            yPos += 15;
-          } else {
-            yPos += 10;
-          }
           doc.text(item.quantity.toString(), 100, yPos);
           doc.text(`Ugx.${item.unitPrice.toFixed(2)}`, 130, yPos);
           doc.text(`Ugx.${item.total.toFixed(2)}`, 170, yPos);
@@ -706,6 +699,30 @@
     alert('Failed to create sale.');
   }
 }
+    // Function to generate a string of dashes of a specific length
+function generateDashes(length) {
+    return '-'.repeat(length);
+}
+
+// Function to generate the next receipt number
+let receiptCounter = 0; // This should be persisted in your backend or localStorage
+function getNextReceiptNumber() {
+    receiptCounter += 1;
+    // Save the counter to localStorage or backend for persistence
+    localStorage.setItem('receiptCounter', receiptCounter);
+    return receiptCounter;
+}
+
+// Initialize receipt counter from localStorage
+function initializeReceiptCounter() {
+    const savedCounter = localStorage.getItem('receiptCounter');
+    if (savedCounter) {
+        receiptCounter = parseInt(savedCounter, 10);
+    }
+}
+
+// Call this function when the page loads
+initializeReceiptCounter();
     
     // Fetch Sales History
     async function fetchSalesHistory() {
