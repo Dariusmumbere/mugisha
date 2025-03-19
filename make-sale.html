@@ -832,6 +832,9 @@ async function deleteSale(saleId) {
     }
   }
 }
+    function closeModal(modalId) {
+  document.getElementById(modalId).classList.add('hidden');
+}
 
     // Initialize
     fetchProducts();
