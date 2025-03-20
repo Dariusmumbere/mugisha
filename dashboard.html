@@ -1883,23 +1883,16 @@ async function fetchOverviewData() {
     const netProfitAmount = document.getElementById('netProfitAmount').textContent;
     const stockBalanceAmount = document.querySelector('.finance-item:nth-child(3) .amount-box').textContent;
 
+    console.log("Net Profit (from finance card):", netProfitAmount);
+    console.log("Stock Balance (from finance card):", stockBalanceAmount);
+
     // Update the overview section with the finance card values
     document.getElementById('netProfit').textContent = netProfitAmount;
     document.getElementById('stockBalance').textContent = stockBalanceAmount;
-
-    console.log("Overview section updated with finance card values:");
-    console.log("Net Profit:", netProfitAmount);
-    console.log("Stock Balance:", stockBalanceAmount);
   } catch (error) {
     console.error('Error fetching overview data:', error);
   }
 }
-
-// Fetch overview data on page load
-document.addEventListener('DOMContentLoaded', fetchOverviewData);
-
-// Poll for updates every 10 seconds
-setInterval(fetchOverviewData, 10000);
     
     function openPaymentAcquisitionModal() {
     document.getElementById('paymentAcquisitionModal').classList.remove('hidden');
@@ -1973,6 +1966,7 @@ setInterval(fetchOverviewData, 10000);
     fetchServices();
     fetchTotalInvestment();
     updateTotalInvested();
+    fetchOverviewData();
   </script>
 </body>
 </html>
