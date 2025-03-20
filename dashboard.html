@@ -1856,43 +1856,50 @@ document.addEventListener('DOMContentLoaded', fetchNotifications);
 
     // Function to fetch and update overview data
 async function fetchOverviewData() {
-  try {
-    // Fetch total sales
-    const totalSalesResponse = await fetch(`${backendUrl}/sales/`);
-    const totalSalesData = await totalSalesResponse.json();
-    const totalSales = totalSalesData.sales.reduce((sum, sale) => sum + sale.total_amount, 0);
-    document.getElementById('totalSales').textContent = totalSales.toLocaleString();
+    try {
+        // Fetch total sales
+        const totalSalesResponse = await fetch(`${backendUrl}/sales/`);
+        const totalSalesData = await totalSalesResponse.json();
+        const totalSales = totalSalesData.sales.reduce((sum, sale) => sum + sale.total_amount, 0);
+        document.getElementById('totalSales').textContent = totalSales.toLocaleString();
 
-    // Fetch gross profit
-    const grossProfitResponse = await fetch(`${backendUrl}/gross_profit/`);
-    const grossProfitData = await grossProfitResponse.json();
-    document.getElementById('grossProfit').textContent = grossProfitData.gross_profit.toLocaleString();
+        // Fetch gross profit
+        const grossProfitResponse = await fetch(`${backendUrl}/gross_profit/`);
+        const grossProfitData = await grossProfitResponse.json();
+        document.getElementById('grossProfit').textContent = grossProfitData.gross_profit.toLocaleString();
 
-    // Fetch total expenses
-    const totalExpensesResponse = await fetch(`${backendUrl}/expenses/`);
-    const totalExpensesData = await totalExpensesResponse.json();
-    const totalExpenses = totalExpensesData.expenses.reduce((sum, expense) => sum + expense.total, 0);
-    document.getElementById('totalExpenses').textContent = totalExpenses.toLocaleString();
+        // Fetch total expenses
+        const totalExpensesResponse = await fetch(`${backendUrl}/expenses/`);
+        const totalExpensesData = await totalExpensesResponse.json();
+        const totalExpenses = totalExpensesData.expenses.reduce((sum, expense) => sum + expense.total, 0);
+        document.getElementById('totalExpenses').textContent = totalExpenses.toLocaleString();
 
-    // Fetch debtors balance
-    const debtorsBalanceResponse = await fetch(`${backendUrl}/debtors_balance/`);
-    const debtorsBalanceData = await debtorsBalanceResponse.json();
-    document.getElementById('debtorsBalance').textContent = debtorsBalanceData.debtors_balance.toLocaleString();
+        // Fetch debtors balance
+        const debtorsBalanceResponse = await fetch(`${backendUrl}/debtors_balance/`);
+        const debtorsBalanceData = await debtorsBalanceResponse.json();
+        document.getElementById('debtorsBalance').textContent = debtorsBalanceData.debtors_balance.toLocaleString();
 
-    // Use the same values as the finance card for net profit and stock balance
-    const netProfitAmount = document.getElementById('netProfitAmount').textContent;
-    const stockBalanceAmount = document.querySelector('.finance-item:nth-child(3) .amount-box').textContent;
+        // Use the same values as the finance card for net profit and stock balance
+        const netProfitAmount = document.getElementById('netProfitAmount').textContent;
+        const stockBalanceAmount = document.querySelector('.finance-item:nth-child(3) .amount-box').textContent;
 
-    console.log("Net Profit (from finance card):", netProfitAmount);
-    console.log("Stock Balance (from finance card):", stockBalanceAmount);
+        // Update the overview section with the finance card values
+        document.getElementById('netProfit').textContent = netProfitAmount;
+        document.getElementById('stockBalance').textContent = stockBalanceAmount;
 
-    // Update the overview section with the finance card values
-    document.getElementById('netProfit').textContent = netProfitAmount;
-    document.getElementById('stockBalance').textContent = stockBalanceAmount;
-  } catch (error) {
-    console.error('Error fetching overview data:', error);
-  }
+        console.log("Overview section updated with finance card values:");
+        console.log("Net Profit:", netProfitAmount);
+        console.log("Stock Balance:", stockBalanceAmount);
+    } catch (error) {
+        console.error('Error fetching overview data:', error);
+    }
 }
+
+// Fetch overview data on page load
+document.addEventListener('DOMContentLoaded', fetchOverviewData);
+
+// Poll for updates every 10 seconds
+setInterval(fetchOverviewData, 10000);
     
     function openPaymentAcquisitionModal() {
     document.getElementById('paymentAcquisitionModal').classList.remove('hidden');
@@ -1966,7 +1973,6 @@ async function fetchOverviewData() {
     fetchServices();
     fetchTotalInvestment();
     updateTotalInvested();
-    fetchOverviewData();
   </script>
 </body>
 </html>
