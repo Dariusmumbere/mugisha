@@ -1864,9 +1864,9 @@ async function fetchOverviewData() {
     document.getElementById('totalSales').textContent = totalSales.toLocaleString();
 
     // Fetch gross profit
-    const grossProfitResponse = await fetch(`${backendUrl}/net_profit/`);
+    const grossProfitResponse = await fetch(`${backendUrl}/gross_profit/`);
     const grossProfitData = await grossProfitResponse.json();
-    document.getElementById('grossProfit').textContent = grossProfitData.net_profit.toLocaleString();
+    document.getElementById('grossProfit').textContent = grossProfitData.gross_profit.toLocaleString();
 
     // Fetch total expenses
     const totalExpensesResponse = await fetch(`${backendUrl}/expenses/`);
