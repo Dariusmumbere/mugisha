@@ -1880,14 +1880,10 @@ async function fetchOverviewData() {
     document.getElementById('debtorsBalance').textContent = debtorsBalanceData.debtors_balance.toLocaleString();
 
     // Fetch net profit (using the same logic as the finance card)
-    const netProfitResponse = await fetch(`${backendUrl}/net_profit/`);
-    const netProfitData = await netProfitResponse.json();
-    document.getElementById('netProfit').textContent = netProfitData.net_profit.toLocaleString();
+    document.getElementById('netProfit').textContent = document.getElementById('netProfitAmount').textContent;
 
     // Fetch stock balance (using the same logic as the finance card)
-    const stockBalanceResponse = await fetch(`${backendUrl}/total_stock/`);
-    const stockBalanceData = await stockBalanceResponse.json();
-    document.getElementById('stockBalance').textContent = stockBalanceData.total_stock.toLocaleString();
+    document.getElementById('stockBalance').textContent = document.querySelector('.finance-item:nth-child(3) .amount-box').textContent;
   } catch (error) {
     console.error('Error fetching overview data:', error);
   }
