@@ -616,12 +616,12 @@
   <!-- Net Profit Card -->
   <div class="bg-gradient-to-r from-pink-500 to-pink-600 p-6 rounded-lg shadow text-white">
     <h3 class="text-lg font-semibold"><i class="fas fa-chart-pie mr-2"></i>Net Profit</h3>
-    <p class="text-2xl font-bold">Ugx<span id="nnetProfit">0</span></p>
+    <p class="text-2xl font-bold">Ugx<span id="netProfit">0</span></p>
   </div>
   <!-- Stock Balance Card -->
   <div class="bg-gradient-to-r from-indigo-500 to-indigo-600 p-6 rounded-lg shadow text-white">
     <h3 class="text-lg font-semibold"><i class="fas fa-boxes mr-2"></i>Stock Balance</h3>
-    <p class="text-2xl font-bold">Ugx<span id="sttockBalance">0</span></p>
+    <p class="text-2xl font-bold">Ugx<span id="stockBalance">0</span></p>
   </div>
 </div>
     
@@ -1879,11 +1879,17 @@ async function fetchOverviewData() {
     const debtorsBalanceData = await debtorsBalanceResponse.json();
     document.getElementById('debtorsBalance').textContent = debtorsBalanceData.debtors_balance.toLocaleString();
 
-    // Fetch net profit (using the same logic as the finance card)
-    document.getElementById('nnetProfit').textContent = document.getElementById('netProfitAmount').textContent;
+    // Use the same values as the finance card for net profit and stock balance
+    const netProfitAmount = document.getElementById('netProfitAmount').textContent;
+    const stockBalanceAmount = document.querySelector('.finance-item:nth-child(3) .amount-box').textContent;
 
-    // Fetch stock balance (using the same logic as the finance card)
-    document.getElementById('sttockBalance').textContent = document.querySelector('.finance-item:nth-child(3) .amount-box').textContent;
+    // Update the overview section with the finance card values
+    document.getElementById('netProfit').textContent = netProfitAmount;
+    document.getElementById('stockBalance').textContent = stockBalanceAmount;
+
+    console.log("Overview section updated with finance card values:");
+    console.log("Net Profit:", netProfitAmount);
+    console.log("Stock Balance:", stockBalanceAmount);
   } catch (error) {
     console.error('Error fetching overview data:', error);
   }
@@ -1894,7 +1900,7 @@ document.addEventListener('DOMContentLoaded', fetchOverviewData);
 
 // Poll for updates every 10 seconds
 setInterval(fetchOverviewData, 10000);
-
+    
     function openPaymentAcquisitionModal() {
     document.getElementById('paymentAcquisitionModal').classList.remove('hidden');
   }
