@@ -1879,12 +1879,12 @@ async function fetchOverviewData() {
     const debtorsBalanceData = await debtorsBalanceResponse.json();
     document.getElementById('debtorsBalance').textContent = debtorsBalanceData.debtors_balance.toLocaleString();
 
-    // Fetch net profit
+    // Fetch net profit (using the same logic as the finance card)
     const netProfitResponse = await fetch(`${backendUrl}/net_profit/`);
     const netProfitData = await netProfitResponse.json();
     document.getElementById('netProfit').textContent = netProfitData.net_profit.toLocaleString();
 
-    // Fetch stock balance
+    // Fetch stock balance (using the same logic as the finance card)
     const stockBalanceResponse = await fetch(`${backendUrl}/total_stock/`);
     const stockBalanceData = await stockBalanceResponse.json();
     document.getElementById('stockBalance').textContent = stockBalanceData.total_stock.toLocaleString();
