@@ -1874,11 +1874,6 @@ async function fetchOverviewData() {
         const totalExpenses = totalExpensesData.expenses.reduce((sum, expense) => sum + expense.total, 0);
         document.getElementById('totalExpenses').textContent = totalExpenses.toLocaleString();
 
-        // Fetch debtors balance
-        const debtorsBalanceResponse = await fetch(`${backendUrl}/debtors_balance/`);
-        const debtorsBalanceData = await debtorsBalanceResponse.json();
-        document.getElementById('debtorsBalance').textContent = debtorsBalanceData.debtors_balance.toLocaleString();
-
         // Use the same values as the finance card for net profit and stock balance
         const netProfitAmount = document.getElementById('netProfitAmount').textContent;
         const stockBalanceAmount = document.querySelector('.finance-item:nth-child(3) .amount-box').textContent;
