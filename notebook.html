@@ -17,6 +17,7 @@
             <textarea id="diaryEntry" class="w-full p-2 border rounded-lg mb-4" placeholder="Write your diary entry here..."></textarea>
             <button onclick="addDiaryEntry()" class="bg-blue-500 text-white px-4 py-2 rounded-lg">Add Entry</button>
         </div>
+        <div id="diaryEntries" class="space-y-2"></div>
 
         <!-- To-Do List Section -->
         <div class="bg-white p-6 rounded-lg shadow-md">
@@ -84,31 +85,35 @@
         }
 
         // Function to add a task
-        async function addTask() {
-            const title = document.getElementById('taskTitle').value;
-            const content = document.getElementById('taskContent').value;
-            const date = document.getElementById('taskDate').value;
-            const status = 'pending';
+       async function addTask() {
+    const title = document.getElementById('taskTitle').value;
+    const content = document.getElementById('taskContent').value;
+    const date = document.getElementById('taskDate').value;
 
-            const response = await fetch(`${backendUrl}/tasks/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ title, content, date, status }),
-            });
+    if (!title || !content || !date) {
+        alert('Please fill in all fields');
+        return;
+    }
 
-            if (response.ok) {
-                alert('Task added successfully');
-                document.getElementById('taskTitle').value = '';
-                document.getElementById('taskContent').value = '';
-                document.getElementById('taskDate').value = '';
-                fetchTasks();
-            } else {
-                alert('Failed to add task');
-            }
-        }
+    const status = 'pending';
+    const response = await fetch(`${backendUrl}/tasks/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title, content, date, status }),
+    });
 
+    if (response.ok) {
+        alert('Task added successfully');
+        document.getElementById('taskTitle').value = '';
+        document.getElementById('taskContent').value = '';
+        document.getElementById('taskDate').value = '';
+        fetchTasks();
+    } else {
+        alert('Failed to add task');
+    }
+}
         // Function to fetch tasks
         async function fetchTasks() {
             const response = await fetch(`${backendUrl}/tasks/`);
@@ -146,22 +151,42 @@
 
         // Function to update task status
         async function updateTaskStatus(taskId, status) {
-            const response = await fetch(`${backendUrl}/tasks/${taskId}/status`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ status }),
-            });
+    const response = await fetch(`${backendUrl}/tasks/${taskId}/status`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
+    });
 
-            if (response.ok) {
-                alert('Task status updated successfully');
-                fetchTasks();
-            } else {
-                alert('Failed to update task status');
-            }
-        }
+    if (response.ok) {
+        alert('Task status updated successfully');
+        fetchTasks();
+    } else {
+        alert('Failed to update task status');
+    }
+}
+        async function fetchDiaryEntries() {
+    const response = await fetch(`${backendUrl}/diary/`);
+    const data = await response.json();
+    displayDiaryEntries(data.entries);
+}
 
+function displayDiaryEntries(entries) {
+    const diaryContainer = document.getElementById('diaryEntries'); // Add a container in HTML
+    diaryContainer.innerHTML = '';
+
+    entries.forEach(entry => {
+        const entryElement = document.createElement('div');
+        entryElement.className = 'bg-white p-4 rounded-lg shadow-sm mb-4';
+        entryElement.innerHTML = `
+            <p class="text-gray-600">${entry.content}</p>
+            <p class="text-xs text-gray-500">${entry.date}</p>
+        `;
+        diaryContainer.appendChild(entryElement);
+    });
+}
+        
         // Fetch tasks and diary entries on page load
         fetchTasks();
         fetchDiaryEntries();
