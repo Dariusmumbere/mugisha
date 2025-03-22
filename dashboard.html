@@ -1976,8 +1976,7 @@ setInterval(fetchOverviewData, 10000);
       img.onload = () => resolve(img);
     });
   }
-    // Function to fetch and display pending tasks
-async function fetchPendingTasks() {
+    async function fetchPendingTasks() {
   try {
     const response = await fetch(`${backendUrl}/tasks/`);
     const data = await response.json();
@@ -1985,19 +1984,18 @@ async function fetchPendingTasks() {
 
     const pendingTasksList = document.getElementById('pendingTasksList');
     pendingTasksList.innerHTML = pendingTasks.map(task => `
-      <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded">
-        <h4 class="font-semibold">${task.title}</h4>
-        <p class="text-sm text-gray-600 dark:text-gray-400">${task.content}</p>
-        <p class="text-xs text-gray-500 dark:text-gray-300">${task.date}</p>
-      </div>
+      <details class="bg-gray-100 dark:bg-gray-700 p-2 rounded">
+        <summary class="cursor-pointer font-semibold dark:text-white">${task.title}</summary>
+        <div class="mt-2">
+          <p class="text-sm text-gray-600 dark:text-gray-400">${task.content}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-300">${task.date}</p>
+        </div>
+      </details>
     `).join('');
   } catch (error) {
     console.error('Error fetching pending tasks:', error);
   }
 }
-
-// Fetch pending tasks on page load
-document.addEventListener('DOMContentLoaded', fetchPendingTasks);
     
     
     // Fetch and Display Sales Analysis (Last 6 Months)
