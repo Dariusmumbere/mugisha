@@ -138,6 +138,20 @@
       border-radius: 8px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
+    /* Add this to your existing CSS */
+#clientList {
+  max-height: 300px; /* Adjust the height as needed */
+  overflow-y: auto; /* Enable vertical scrolling */
+  border: 1px solid #ddd; /* Optional: Add a border */
+  border-radius: 4px; /* Optional: Add rounded corners */
+  padding: 10px; /* Optional: Add padding */
+  background-color: #f9f9f9; /* Optional: Add a background color */
+}
+
+.dark #clientList {
+  border-color: #374151; /* Dark mode border color */
+  background-color: #1f2937; /* Dark mode background color */
+}
   </style>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -266,18 +280,21 @@
   </div>
 
   <!-- Choose Client Modal -->
-  <div id="chooseClientModal" class="modal-overlay hidden">
-    <div class="modal-content">
-      <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-users mr-2"></i>Choose Client</h3>
-      <button onclick="openAddClientModal()" class="gray-button mb-4">
-        <i class="fas fa-user-plus mr-2"></i>Add New Client
-      </button>
-      <div id="clientList" class="mb-4">
-        <!-- Clients will be dynamically added here -->
-      </div>
-      <button onclick="closeModal('chooseClientModal')" class="close-button">Close</button>
+<div id="chooseClientModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <h3 class="text-lg font-semibold mb-4 dark:text-white">
+      <i class="fas fa-users mr-2"></i>Choose Client
+    </h3>
+    <button onclick="openAddClientModal()" class="gray-button mb-4">
+      <i class="fas fa-user-plus mr-2"></i>Add New Client
+    </button>
+    <!-- Client List with Scroll Bar -->
+    <div id="clientList" class="mb-4">
+      <!-- Clients will be dynamically added here -->
     </div>
+    <button onclick="closeModal('chooseClientModal')" class="close-button">Close</button>
   </div>
+</div>
 
   <!-- Add Item Modal -->
   <div id="addItemModal" class="modal-overlay hidden">
