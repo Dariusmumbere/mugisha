@@ -214,6 +214,27 @@
     .dropdown-content div:hover {
       background-color: #f1f1f1;
     }
+
+    /* Loading indicator */
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(0,0,0,.3);
+      border-radius: 50%;
+      border-top-color: #2563eb;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-container {
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
   </style>
 </head>
 <body>
@@ -237,7 +258,12 @@
         </tr>
       </thead>
       <tbody id="stockTableBody">
-        <!-- Stock items will be dynamically added here -->
+        <!-- Loading indicator will be shown here initially -->
+        <tr>
+          <td colspan="6" class="loading-container">
+            <div class="loading"></div>
+          </td>
+        </tr>
       </tbody>
     </table>
   </main>
@@ -275,41 +301,74 @@
 
   // Fetch and display stock items
   async function fetchStock() {
-  try {
-    const response = await fetch(`${backendUrl}/stock/`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    const stockTableBody = document.getElementById('stockTableBody');
-    if (data.stock && Array.isArray(data.stock)) {
-      stockTableBody.innerHTML = data.stock.map(item => `
+    try {
+      const stockTableBody = document.getElementById('stockTableBody');
+      // Show loading indicator
+      stockTableBody.innerHTML = `
         <tr>
-          <td>${item.product_name}</td>
-          <td>${item.product_type}</td>
-          <td>${item.quantity}</td>
-          <td>UGX ${item.price_per_unit.toLocaleString()}</td>
-          <td>UGX ${(item.quantity * item.price_per_unit).toLocaleString()}</td>
-          <td class="actions">
-            <button class="increment-btn" onclick="incrementStock('${item.product_name}', '${item.product_type}')">
-              <i class="fas fa-plus"></i> Increment
-            </button>
-            <button class="decrement-btn" onclick="decrementStock('${item.product_name}', '${item.product_type}')">
-              <i class="fas fa-minus"></i> Decrement
-            </button>
-            <button class="delete-btn" onclick="deleteStockItem('${item.product_name}', '${item.product_type}')">
-              <i class="fas fa-trash"></i> Delete
-            </button>
+          <td colspan="6" class="loading-container">
+            <div class="loading"></div>
           </td>
         </tr>
-      `).join('');
-    } else {
-      console.error('Invalid data structure received:', data);
+      `;
+      
+      const response = await fetch(`${backendUrl}/stock/`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      
+      if (data.stock && Array.isArray(data.stock)) {
+        if (data.stock.length === 0) {
+          stockTableBody.innerHTML = `
+            <tr>
+              <td colspan="6" style="text-align: center;">No stock items found. Add some stock to get started.</td>
+            </tr>
+          `;
+        } else {
+          stockTableBody.innerHTML = data.stock.map(item => `
+            <tr>
+              <td>${item.product_name}</td>
+              <td>${item.product_type}</td>
+              <td>${item.quantity}</td>
+              <td>UGX ${item.price_per_unit.toLocaleString()}</td>
+              <td>UGX ${(item.quantity * item.price_per_unit).toLocaleString()}</td>
+              <td class="actions">
+                <button class="increment-btn" onclick="incrementStock('${item.product_name}', '${item.product_type}')">
+                  <i class="fas fa-plus"></i> Increment
+                </button>
+                <button class="decrement-btn" onclick="decrementStock('${item.product_name}', '${item.product_type}')">
+                  <i class="fas fa-minus"></i> Decrement
+                </button>
+                <button class="delete-btn" onclick="deleteStockItem('${item.product_name}', '${item.product_type}')">
+                  <i class="fas fa-trash"></i> Delete
+                </button>
+              </td>
+            </tr>
+          `).join('');
+        }
+      } else {
+        console.error('Invalid data structure received:', data);
+        stockTableBody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center; color: #ef4444;">
+              Error loading stock data. Please try again.
+            </td>
+          </tr>
+        `;
+      }
+    } catch (error) {
+      console.error('Error fetching stock:', error);
+      document.getElementById('stockTableBody').innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align: center; color: #ef4444;">
+            Error loading stock data: ${error.message}
+          </td>
+        </tr>
+      `;
     }
-  } catch (error) {
-    console.error('Error fetching stock:', error);
   }
-}
+
   // Fetch all products for dropdown
   async function fetchProducts() {
     try {
@@ -360,12 +419,17 @@
       if (response.ok) {
         alert('Stock added successfully!');
         closeModal('addStockModal');
+        // Reset form
+        document.getElementById('addStockForm').reset();
+        // Refresh stock table
         fetchStock();
       } else {
-        alert('Failed to add stock');
+        const errorData = await response.json();
+        alert(`Failed to add stock: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error adding stock:', error);
+      alert('Error adding stock. Please check console for details.');
     }
   });
 
@@ -380,10 +444,12 @@
         alert('Stock quantity incremented successfully!');
         fetchStock(); // Refresh the stock table
       } else {
-        alert('Failed to increment stock');
+        const errorData = await response.json();
+        alert(`Failed to increment stock: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error incrementing stock:', error);
+      alert('Error incrementing stock. Please check console for details.');
     }
   }
 
@@ -398,59 +464,18 @@
         alert('Stock quantity decremented successfully!');
         fetchStock(); // Refresh the stock table
       } else {
-        alert('Failed to decrement stock');
+        const errorData = await response.json();
+        alert(`Failed to decrement stock: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error decrementing stock:', error);
+      alert('Error decrementing stock. Please check console for details.');
     }
   }
-
-  // Edit Stock Item
-  async function editStockItem(productName, productType, currentQuantity, currentPrice) {
-    document.getElementById('editProductName').value = productName;
-    document.getElementById('editProductType').value = productType;
-    document.getElementById('editQuantity').value = currentQuantity;
-    document.getElementById('editPricePerUnit').value = currentPrice;
-    document.getElementById('editStockModal').classList.remove('hidden');
-  }
-
-  // Submit Edit Stock Form
-  document.getElementById('editStockForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const productName = document.getElementById('editProductName').value;
-    const productType = document.getElementById('editProductType').value;
-    const quantity = parseFloat(document.getElementById('editQuantity').value);
-    const pricePerUnit = parseFloat(document.getElementById('editPricePerUnit').value);
-
-    try {
-      const response = await fetch(`${backendUrl}/stock/update`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          product_name: productName,
-          product_type: productType,
-          quantity: quantity,
-          price_per_unit: pricePerUnit,
-        }),
-      });
-
-      if (response.ok) {
-        alert('Stock updated successfully!');
-        closeModal('editStockModal');
-        fetchStock();
-      } else {
-        alert('Failed to update stock');
-      }
-    } catch (error) {
-      console.error('Error updating stock:', error);
-    }
-  });
 
   // Delete Stock Item
   async function deleteStockItem(productName, productType) {
-    const confirmDelete = confirm(`Are you sure you want to delete ${productName}?`);
+    const confirmDelete = confirm(`Are you sure you want to delete ${productName} (${productType}) from stock?`);
     if (!confirmDelete) return;
 
     try {
@@ -469,15 +494,26 @@
         alert('Stock deleted successfully!');
         fetchStock();
       } else {
-        alert('Failed to delete stock');
+        const errorData = await response.json();
+        alert(`Failed to delete stock: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error deleting stock:', error);
+      alert('Error deleting stock. Please check console for details.');
     }
   }
 
+  // Initialize the page
   document.addEventListener('DOMContentLoaded', function () {
     fetchStock(); // Fetch and display stock items when the page loads
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+      if (!event.target.matches('#productName')) {
+        const dropdown = document.getElementById('productDropdown');
+        if (dropdown) dropdown.style.display = 'none';
+      }
+    });
   });
 </script>
 </body>
