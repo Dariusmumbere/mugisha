@@ -9,6 +9,33 @@
       margin-bottom: 15px;
       color: white;
     }
+    .daily-sales-summary {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.dark .daily-sales-summary {
+  background-color: #1f2937;
+}
+
+#dailySalesTotal {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.calendar-container {
+  margin-top: 15px;
+}
+
+/* Make sure the calendar input is visible in dark mode */
+.dark .flatpickr-input {
+  background-color: #374151;
+  color: white;
+  border-color: #4b5563;
+}
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -185,12 +212,18 @@
   <!-- Main Content -->
    <div class="container mx-auto p-8">
     <!-- Daily Sales Summary and Calendar -->
-    <div class="daily-sales-summary">
-      <h3>Daily Sales Summary</h3>
-      <p>Total Sales Today: <span id="dailySalesTotal">0.00</span></p>
-      <div class="calendar-container">
-        <input type="text" id="calendar" placeholder="Select Date" class="w-full p-2 border rounded">
-      </div>
+<div class="daily-sales-summary bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+  <h3 class="text-lg font-semibold mb-4 dark:text-white">
+    <i class="fas fa-chart-line mr-2"></i>Daily Sales Summary
+  </h3>
+  <div class="flex items-center justify-between mb-4">
+    <p class="dark:text-white">Total Sales Today:</p>
+    <p class="text-xl font-bold text-green-600 dark:text-green-400" id="dailySalesTotal">0.00</p>
+  </div>
+  <div class="calendar-container">
+    <input type="text" id="calendar" placeholder="Select Date" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white">
+  </div>
+</div>
     </div>
   <div class="container mx-auto p-8">
     <!-- Make a Sale Section -->
@@ -348,30 +381,52 @@
     });
 
     // Fetch Daily Sales
-    async function fetchDailySales(date) {
-      try {
-        const response = await fetch(`${backendUrl}/sales?date=${date}`);
-        const data = await response.json();
-        const totalSales = data.sales.reduce((sum, sale) => sum + sale.total_amount, 0);
-        document.getElementById('dailySalesTotal').textContent = totalSales.toFixed(2);
-      } catch (error) {
-        console.error('Error fetching daily sales:', error);
-      }
+async function fetchDailySales(date = null) {
+  try {
+    // If no date is provided, use today's date
+    const today = new Date().toISOString().split('T')[0];
+    const dateToFetch = date || today;
+    
+    const response = await fetch(`${backendUrl}/sales?date=${dateToFetch}`);
+    const data = await response.json();
+    
+    // Calculate total sales for the day
+    const totalSales = data.sales.reduce((sum, sale) => sum + sale.total_amount, 0);
+    
+    // Update the daily sales display
+    document.getElementById('dailySalesTotal').textContent = totalSales.toFixed(2);
+    
+    // Also update the daily sales in the overview section if it exists
+    const overviewDailySales = document.getElementById('totalSales');
+    if (overviewDailySales) {
+      overviewDailySales.textContent = totalSales.toFixed(2);
     }
+    
+    return totalSales;
+  } catch (error) {
+    console.error('Error fetching daily sales:', error);
+    document.getElementById('dailySalesTotal').textContent = 'Error';
+    return 0;
+  }
+}
 
-    // Reset Daily Sales at Midnight
-    function resetDailySales() {
-      const now = new Date();
-      const midnight = new Date(now);
-      midnight.setHours(24, 0, 0, 0);
-      const timeUntilMidnight = midnight - now;
-
-      setTimeout(() => {
-        dailySalesTotal = 0;
-        document.getElementById('dailySalesTotal').textContent = dailySalesTotal.toFixed(2);
-        resetDailySales(); // Reset again for the next day
-      }, timeUntilMidnight);
+// Initialize daily sales when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+  // Fetch today's sales immediately
+  fetchDailySales();
+  
+  // Set up periodic refresh (every 5 minutes)
+  setInterval(fetchDailySales, 5 * 60 * 1000);
+  
+  // Also update when the calendar date changes
+  flatpickr("#calendar", {
+    dateFormat: "Y-m-d",
+    defaultDate: new Date(), // Default to today
+    onChange: function(selectedDates, dateStr, instance) {
+      fetchDailySales(dateStr);
     }
+  });
+});
 
 
     // Fetch Products and Stock from Backend
