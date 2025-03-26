@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Modern Auth</title>
+    <title>Login | NDYAKURUNGI ITECH COMPUTER SOLUTIONS</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #4361ee;
-            --primary-dark: #3a56d4;
+            --primary: #2c3e50;
+            --primary-dark: #1a252f;
+            --secondary: #3498db;
             --text: #2b2d42;
             --text-light: #8d99ae;
             --background: #f8f9fa;
             --white: #ffffff;
-            --error: #ef233c;
-            --success: #4cc9f0;
+            --error: #e74c3c;
+            --success: #2ecc71;
         }
         
         * {
@@ -32,27 +33,53 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
+            background-image: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
         }
         
         .auth-container {
             background-color: var(--white);
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 420px;
             padding: 40px;
             transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
         
-        .auth-header {
+        .brand-header {
             text-align: center;
             margin-bottom: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .brand-logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 16px;
+            object-fit: contain;
+        }
+        
+        .brand-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+        
+        .brand-tagline {
+            color: var(--text-light);
+            font-size: 14px;
+            font-weight: 400;
         }
         
         .auth-header h1 {
-            font-size: 24px;
-            font-weight: 700;
+            font-size: 22px;
+            font-weight: 600;
             margin-bottom: 8px;
+            color: var(--primary);
         }
         
         .auth-header p {
@@ -69,6 +96,7 @@
             margin-bottom: 8px;
             font-size: 14px;
             font-weight: 500;
+            color: var(--text);
         }
         
         .auth-form input {
@@ -78,12 +106,13 @@
             border-radius: 8px;
             font-size: 14px;
             transition: all 0.2s ease;
+            background-color: var(--background);
         }
         
         .auth-form input:focus {
             outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
         }
         
         .auth-form button {
@@ -98,6 +127,7 @@
             cursor: pointer;
             transition: all 0.2s ease;
             margin-top: 8px;
+            letter-spacing: 0.5px;
         }
         
         .auth-form button:hover {
@@ -107,11 +137,12 @@
         .auth-footer {
             text-align: center;
             margin-top: 24px;
-            font-size: 14px;
+            font-size: 13px;
+            color: var(--text-light);
         }
         
         .auth-footer a {
-            color: var(--primary);
+            color: var(--secondary);
             text-decoration: none;
             font-weight: 500;
         }
@@ -129,13 +160,13 @@
         }
         
         .error {
-            background-color: rgba(239, 35, 60, 0.1);
+            background-color: rgba(231, 76, 60, 0.1);
             color: var(--error);
             display: block;
         }
         
         .success {
-            background-color: rgba(76, 201, 240, 0.1);
+            background-color: rgba(46, 204, 113, 0.1);
             color: var(--success);
             display: block;
         }
@@ -152,10 +183,12 @@
             font-weight: 500;
             color: var(--text-light);
             position: relative;
+            flex: 1;
+            text-align: center;
         }
         
         .tab.active {
-            color: var(--primary);
+            color: var(--secondary);
         }
         
         .tab.active::after {
@@ -165,7 +198,7 @@
             left: 0;
             width: 100%;
             height: 2px;
-            background-color: var(--primary);
+            background-color: var(--secondary);
         }
         
         .tab-content {
@@ -176,18 +209,43 @@
             display: block;
         }
         
+        .password-toggle {
+            position: relative;
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-light);
+            font-size: 18px;
+        }
+        
         @media (max-width: 480px) {
             .auth-container {
                 padding: 30px 20px;
+            }
+            
+            .brand-logo {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .brand-name {
+                font-size: 18px;
             }
         }
     </style>
 </head>
 <body>
     <div class="auth-container">
-        <div class="auth-header">
-            <h1>Welcome back</h1>
-            <p>Sign in to continue to your account</p>
+        <div class="brand-header">
+            <!-- Replace with your actual logo path -->
+            <img src="logo.png" alt="NDYAKURUNGI ITECH COMPUTER SOLUTIONS" class="brand-logo">
+            <div class="brand-name">NDYAKURUNGI ITECH</div>
+            <div class="brand-tagline">COMPUTER SOLUTIONS</div>
         </div>
         
         <div id="auth-message" class="auth-message"></div>
@@ -200,12 +258,13 @@
         <div id="login-tab" class="tab-content active">
             <form class="auth-form" id="login-form">
                 <div class="input-group">
-                    <label for="login-email">Email</label>
+                    <label for="login-email">Email Address</label>
                     <input type="email" id="login-email" required placeholder="Enter your email">
                 </div>
-                <div class="input-group">
+                <div class="input-group password-toggle">
                     <label for="login-password">Password</label>
                     <input type="password" id="login-password" required placeholder="Enter your password">
+                    <span class="toggle-password" onclick="togglePassword('login-password')">👁️</span>
                 </div>
                 <button type="submit">Sign In</button>
             </form>
@@ -214,16 +273,18 @@
         <div id="signup-tab" class="tab-content">
             <form class="auth-form" id="signup-form">
                 <div class="input-group">
-                    <label for="signup-email">Email</label>
+                    <label for="signup-email">Email Address</label>
                     <input type="email" id="signup-email" required placeholder="Enter your email">
                 </div>
-                <div class="input-group">
+                <div class="input-group password-toggle">
                     <label for="signup-password">Password</label>
-                    <input type="password" id="signup-password" required placeholder="Create a password">
+                    <input type="password" id="signup-password" required placeholder="Create a password (min. 6 chars)">
+                    <span class="toggle-password" onclick="togglePassword('signup-password')">👁️</span>
                 </div>
-                <div class="input-group">
+                <div class="input-group password-toggle">
                     <label for="signup-confirm-password">Confirm Password</label>
                     <input type="password" id="signup-confirm-password" required placeholder="Confirm your password">
+                    <span class="toggle-password" onclick="togglePassword('signup-confirm-password')">👁️</span>
                 </div>
                 <button type="submit">Create Account</button>
             </form>
@@ -271,6 +332,16 @@
             document.getElementById(`${tabName}-tab`).classList.add('active');
         }
 
+        // Toggle password visibility
+        function togglePassword(id) {
+            const input = document.getElementById(id);
+            if (input.type === 'password') {
+                input.type = 'text';
+            } else {
+                input.type = 'password';
+            }
+        }
+
         // Show message
         function showMessage(message, type) {
             authMessage.textContent = message;
@@ -294,7 +365,13 @@
                     window.location.href = 'index.html';
                 })
                 .catch((error) => {
-                    showMessage(error.message, 'error');
+                    let errorMessage = error.message;
+                    if (error.code === 'auth/user-not-found') {
+                        errorMessage = "No account found with this email address";
+                    } else if (error.code === 'auth/wrong-password') {
+                        errorMessage = "Incorrect password";
+                    }
+                    showMessage(errorMessage, 'error');
                 });
         });
 
@@ -305,6 +382,11 @@
             const password = document.getElementById('signup-password').value;
             const confirmPassword = document.getElementById('signup-confirm-password').value;
             
+            if (password.length < 6) {
+                showMessage("Password must be at least 6 characters", 'error');
+                return;
+            }
+            
             if (password !== confirmPassword) {
                 showMessage("Passwords don't match", 'error');
                 return;
@@ -313,10 +395,17 @@
             auth.createUserWithEmailAndPassword(email, password)
                 .then((userCredential) => {
                     // Signed up
-                    window.location.href = 'index.html';
+                    showMessage("Account created successfully! Redirecting...", 'success');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
                 })
                 .catch((error) => {
-                    showMessage(error.message, 'error');
+                    let errorMessage = error.message;
+                    if (error.code === 'auth/email-already-in-use') {
+                        errorMessage = "An account already exists with this email";
+                    }
+                    showMessage(errorMessage, 'error');
                 });
         });
 
