@@ -12,6 +12,25 @@
   padding-bottom: 80px;
   
 }
+    .loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(0,0,0,.3);
+  border-radius: 50%;
+  border-top-color: #2563eb;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
     .pending-tasks-card {
   background-color: inherit;
   padding: 6px;
@@ -561,15 +580,14 @@
 </div>
 
 
-<!-- Pending Tasks Card -->
 <div class="pending-tasks-card bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
   <h2 class="text-xl font-semibold mb-4 dark:text-white"><i class="fas fa-tasks mr-2"></i>Pending Tasks</h2>
   <div id="pendingTasksList" class="space-y-2">
-    <!-- Pending tasks will be dynamically added here -->
+    <!-- Loading indicator will be shown here initially -->
+    <div class="loading-container">
+      <div class="loading"></div>
+    </div>
   </div>
-  <button onclick="fetchPendingTasks()" class="gray-button mt-4">
-    <i class="fas fa-sync mr-2"></i>Refresh Tasks
-  </button>
 </div>
 
       <!-- Products Card -->
@@ -1977,24 +1995,46 @@ setInterval(fetchOverviewData, 10000);
   }
     async function fetchPendingTasks() {
   try {
+    // Show loading indicator
+    const pendingTasksList = document.getElementById('pendingTasksList');
+    pendingTasksList.innerHTML = `
+      <div class="loading-container">
+        <div class="loading"></div>
+      </div>
+    `;
+
     const response = await fetch(`${backendUrl}/tasks/`);
     const data = await response.json();
     const pendingTasks = data.tasks.filter(task => task.status === 'pending');
 
-    const pendingTasksList = document.getElementById('pendingTasksList');
-    pendingTasksList.innerHTML = pendingTasks.map(task => `
-      <details class="bg-gray-100 dark:bg-gray-700 p-2 rounded">
-        <summary class="cursor-pointer font-semibold dark:text-white">${task.title}</summary>
-        <div class="mt-2">
-          <p class="text-sm text-gray-600 dark:text-gray-400">${task.content}</p>
-          <p class="text-xs text-gray-500 dark:text-gray-300">${task.date}</p>
-        </div>
-      </details>
-    `).join('');
+    if (pendingTasks.length === 0) {
+      pendingTasksList.innerHTML = `
+        <p class="text-center text-gray-500 dark:text-gray-400">No pending tasks</p>
+      `;
+    } else {
+      pendingTasksList.innerHTML = pendingTasks.map(task => `
+        <details class="bg-gray-100 dark:bg-gray-700 p-2 rounded">
+          <summary class="cursor-pointer font-semibold dark:text-white">${task.title}</summary>
+          <div class="mt-2">
+            <p class="text-sm text-gray-600 dark:text-gray-400">${task.content}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-300">${task.date}</p>
+          </div>
+        </details>
+      `).join('');
+    }
   } catch (error) {
     console.error('Error fetching pending tasks:', error);
+    document.getElementById('pendingTasksList').innerHTML = `
+      <p class="text-center text-red-500">Error loading tasks. Please try again later.</p>
+    `;
   }
 }
+
+// Call fetchPendingTasks when the page loads
+document.addEventListener('DOMContentLoaded', fetchPendingTasks);
+
+// Refresh tasks every 30 seconds
+setInterval(fetchPendingTasks, 30000);
     
     
     // Fetch and Display Sales Analysis (Last 6 Months)
