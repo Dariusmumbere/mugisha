@@ -9,6 +9,32 @@
       margin-bottom: 15px;
       color: white;
     }
+    .quick-actions {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .quick-actions .action-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #4b5563;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+    .quick-actions .action-item:hover {
+      color: #1e40af;
+    }
+    .quick-actions .action-item .hover-text {
+      display: none;
+    }
+    .quick-actions .action-item:hover .default-text {
+      display: none;
+    }
+    .quick-actions .action-item:hover .hover-text {
+      display: inline;
+    }
     .daily-sales-summary {
   background-color: #ffffff;
   padding: 20px;
