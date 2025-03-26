@@ -1,1 +1,1026 @@
+;<!DOCTYPE html>
+<html lang="en">
+<head>
+  <style>
+    .overview {
+      font-size: 34px;
+      text-align: center;
+      background-color: rgb(19, 19, 71);
+      margin-bottom: 15px;
+      color: white;
+    }
+    .daily-sales-summary {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
 
+.dark .daily-sales-summary {
+  background-color: #1f2937;
+}
+
+#dailySalesTotal {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.calendar-container {
+  margin-top: 15px;
+}
+
+/* Make sure the calendar input is visible in dark mode */
+.dark .flatpickr-input {
+  background-color: #374151;
+  color: white;
+  border-color: #4b5563;
+}
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .dark .modal-content {
+      background-color: #1f2937;
+      color: white;
+    }
+    .sale-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    .sale-table th, .sale-table td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    .dark .sale-table th, .dark .sale-table td {
+      border-color: #374151;
+    }
+    .hidden {
+      display: none;
+    }
+    .gray-button {
+      background-color: #6b7280;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      text-align: center;
+      display: inline-block;
+      width: auto;
+      margin: 5px;
+      border: 1px solid black;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    .gray-button:hover {
+      background-color: #4b5563;
+    }
+    .close-button {
+      background-color: #ef4444;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      text-align: center;
+      display: inline-block;
+      width: auto;
+      margin: 5px;
+      border: 1px solid black;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    .close-button:hover {
+      background-color: #dc2626;
+    }
+    .flex-end {
+      display: flex;
+      justify-content: flex-end;
+    }
+    .editable-unit-price {
+      border: 1px solid #ddd;
+      padding: 5px;
+      border-radius: 4px;
+      width: 80px;
+    }
+    .sales-history-modal {
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .sales-history-modal table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .sales-history-modal th, .sales-history-modal td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    .sales-history-modal th {
+      background-color: #f3f4f6;
+    }
+    .dark .sales-history-modal th {
+      background-color: #374151;
+    }
+    .daily-sales-summary {
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      margin-left: 550px;
+      margin-right: 40px;
+    }
+
+    .daily-sales-summary h3 {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .daily-sales-summary p {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    .calendar-container {
+      margin-top: 20px;
+    }
+
+    .flatpickr-calendar {
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    /* Add this to your existing CSS */
+#clientList {
+  max-height: 300px; /* Adjust the height as needed */
+  overflow-y: auto; /* Enable vertical scrolling */
+  border: 1px solid #ddd; /* Optional: Add a border */
+  border-radius: 4px; /* Optional: Add rounded corners */
+  padding: 10px; /* Optional: Add padding */
+  background-color: #f9f9f9; /* Optional: Add a background color */
+}
+
+.dark #clientList {
+  border-color: #374151; /* Dark mode border color */
+  background-color: #1f2937; /* Dark mode background color */
+}
+  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Make a Sale - Ndyakurungi ITECH</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body class="bg-gray-100 dark:bg-gray-900">
+  <header class="bg-white dark:bg-gray-800 shadow">
+  <div class="container mx-auto p-4 flex items-center justify-between">
+    <div class="flex items-center">
+      <div class="text-4xl text-blue-600 dark:text-blue-400 mr-4">
+        <img src="Itech-computers-logo1.webp" alt="Itech Computers Logo">
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold dark:text-white">NDYAKURUNGI ITECH COMPUTER SOLUTIONS</h1>
+        <p class="text-sm text-gray-600 dark:text-gray-400">Name it, we will provide & deliver it</p>
+      </div>
+    </div>
+    <div class="flex items-center">
+      <!-- Notification Dropdown -->
+      <div class="notification-dropdown relative mr-4">
+        
+        <div class="action-item" onclick="toggleNotifications()">
+          <i class="fas fa-bell text-gray-800 dark:text-yellow-400"></i>
+          <span class="notification-badge" id="notification-count">0</span>
+        </div>
+        <div id="notification-list" class="notification-list hidden">
+          <!-- Notifications will be dynamically added here -->
+        </div>
+      </div>
+      <div class="action-item" onclick="window.location.href='notebook.html'">
+          <i class="fas fa-book text-gray-800 dark:text-yellow-400"></i>
+        </div>
+      <!-- Theme Toggle Button -->
+      <button id="themeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700">
+        <i id="themeIcon" class="fas fa-moon text-gray-800 dark:text-yellow-400"></i>
+      </button>
+    </div>
+  </div>
+</header>
+  <!-- Horizontal Quick Actions -->
+ 
+  <div class="quick-actions">
+    <div class="notification-dropdown">
+  <div class="action-item" onclick="toggleNotifications()">
+    <i class="fas fa-bell"></i>
+    <span class="notification-badge" id="notification-count">0</span>
+    <span class="default-text">Notifications</span>
+    <span class="hover-text">Show Notifications</span>
+  </div>
+  <div id="notification-list" class="notification-list hidden">
+    <!-- Notifications will be dynamically added here -->
+  </div>
+</div>
+    <div class="action-item" onclick="openInvoiceModal()">
+    <i class="fas fa-file-invoice"></i>
+    <span class="default-text">Invoice</span>
+    <span class="hover-text">Create Invoice</span>
+  </div>
+  <div class="action-item" onclick="openQuotationModal()">
+    <i class="fas fa-file-alt"></i>
+    <span class="default-text">Quotation</span>
+    <span class="hover-text">Create Quotation</span>
+  </div>
+  <div class="action-item" onclick="openPaymentVoucherModal()">
+    <i class="fas fa-money-check-alt"></i>
+    <span class="default-text">Make Payment</span>
+    <span class="hover-text">Create Payment Voucher</span>
+  </div>
+    <div class="action-item" onclick="openPaymentAcquisitionModal()">
+    <i class="fas fa-money-check-alt"></i>
+    <span class="default-text">Request Payment</span>
+    <span class="hover-text">Create Payment acquisition</span>
+  </div>
+    
+    <div class="action-item">
+      <i class="fas fa-money-check-alt"></i>
+      <a href="expenses.html">Daily Expenses</a>
+    </div>
+  
+    <div class="action-item" onclick="window.location.href='client-management.html'">
+  <i class="fas fa-users"></i>
+  <span class="default-text">Manage Clients</span>
+  <span class="hover-text">Go to Client Management</span>
+</div>
+  </div>
+
+  <!-- Main Content -->
+   <div class="container mx-auto p-8">
+    <!-- Daily Sales Summary and Calendar -->
+<div class="daily-sales-summary bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+  <h3 class="text-lg font-semibold mb-4 dark:text-white">
+    <i class="fas fa-chart-line mr-2"></i>Daily Sales Summary
+  </h3>
+  <div class="flex items-center justify-between mb-4">
+    <p class="dark:text-white">Total Sales Today:</p>
+    <p class="text-xl font-bold text-green-600 dark:text-green-400" id="dailySalesTotal">0.00</p>
+  </div>
+  <div class="calendar-container">
+    <input type="text" id="calendar" placeholder="Select Date" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white">
+  </div>
+</div>
+    </div>
+  <div class="container mx-auto p-8">
+    <!-- Make a Sale Section -->
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mb-8">
+      <h2 class="text-xl font-semibold mb-4 dark:text-white"><i class="fas fa-cash-register mr-2"></i>Make a Sale</h2>
+      <!-- Buttons for Add Client and Choose Client -->
+      <div class="flex justify-between mb-4">
+        <div>
+          <button onclick="openChooseClientModal()" class="gray-button">
+            <i class="fas fa-users mr-2"></i>Choose Client
+          </button>
+          <span id="selectedClientName" class="ml-2 dark:text-white"></span>
+        </div>
+        <button onclick="openAddClientModal()" class="gray-button">
+          <i class="fas fa-user-plus mr-2"></i>Add Client
+        </button>
+      </div>
+      <!-- Sale Table -->
+      <table class="sale-table">
+  <thead>
+    <tr>
+      <th>Item Name</th>
+      <th>Description</th> <!-- Add description column -->
+      <th>Quantity</th>
+      <th>Unit Price</th>
+      <th>Total</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody id="saleTableBody">
+    <!-- Sale items will be dynamically added here -->
+  </tbody>
+</table>
+      <!-- Add Item and Select Service Buttons -->
+      <div class="flex gap-2 mt-4">
+        <button onclick="openAddItemModal()" class="gray-button">
+          <i class="fas fa-plus mr-2"></i>Select Item
+        </button>
+        <button onclick="openSelectServiceModal()" class="gray-button">
+          <i class="fas fa-cogs mr-2"></i>Select Service
+        </button>
+      </div>
+      <!-- Total and Generate Receipt -->
+      <div class="flex justify-end items-center mt-4">
+        <p class="text-lg font-semibold dark:text-white mr-4">Total: <span id="saleTotal">0.00</span></p>
+        <button onclick="generateReceipt()" class="gray-button">
+          <i class="fas fa-receipt mr-2"></i>Generate Receipt
+        </button>
+      </div>
+    </div>
+
+    <!-- Sales History Section -->
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+      <h2 class="text-xl font-semibold mb-4 dark:text-white"><i class="fas fa-history mr-2"></i>Sales History</h2>
+      <!-- Search Sales History -->
+      <input type="text" id="searchSales" placeholder="Search sales..." class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white">
+      <!-- Sales History Table -->
+      <table class="sale-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Client</th>
+            <th>Items</th>
+            <th>Total Amount</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="salesHistoryBody">
+          <!-- Sales history will be dynamically added here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add Client Modal -->
+  <div id="addClientModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-user-plus mr-2"></i>Add Client</h3>
+      <form id="addClientForm">
+        <input type="text" placeholder="Client Name" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+        <input type="text" placeholder="Client Email" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+        <input type="text" placeholder="Client Phone" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+        <button type="submit" class="gray-button">Add Client</button>
+      </form>
+      <button onclick="closeModal('addClientModal')" class="close-button mt-2">Close</button>
+    </div>
+  </div>
+
+  <!-- Choose Client Modal -->
+<div id="chooseClientModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <h3 class="text-lg font-semibold mb-4 dark:text-white">
+      <i class="fas fa-users mr-2"></i>Choose Client
+    </h3>
+    <button onclick="openAddClientModal()" class="gray-button mb-4">
+      <i class="fas fa-user-plus mr-2"></i>Add New Client
+    </button>
+    <!-- Client List with Scroll Bar -->
+    <div id="clientList" class="mb-4">
+      <!-- Clients will be dynamically added here -->
+    </div>
+    <button onclick="closeModal('chooseClientModal')" class="close-button">Close</button>
+  </div>
+</div>
+
+  <!-- Add Item Modal -->
+  <div id="addItemModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-plus mr-2"></i>Add Item</h3>
+      <form id="addItemForm">
+        <select id="itemSelect" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+          <option value="" disabled selected>Select Item</option>
+          <!-- Items will be dynamically added here -->
+        </select>
+        <input type="number" placeholder="Quantity" id="itemQuantity" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+        <button type="submit" class="gray-button">Add Item</button>
+      </form>
+      <button onclick="closeModal('addItemModal')" class="close-button mt-2">Close</button>
+    </div>
+  </div>
+
+ <!-- Select Service Modal -->
+<div id="selectServiceModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-cogs mr-2"></i>Select Service</h3>
+    <form id="selectServiceForm">
+      <select id="serviceSelect" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+        <option value="" disabled selected>Select Service</option>
+        <!-- Services will be dynamically added here -->
+      </select>
+      <input type="number" placeholder="Quantity" id="serviceQuantity" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+      <button type="submit" class="gray-button">Add Service</button>
+    </form>
+    <button onclick="closeModal('selectServiceModal')" class="close-button mt-2">Close</button>
+  </div>
+</div>
+  <!-- JavaScript -->
+  <script>
+    const { jsPDF } = window.jspdf;
+    const backendUrl = 'https://man-m681.onrender.com'; // Replace with your Render backend URL
+    let clients = [];
+    let salesHistory = [];
+    let currentSale = [];
+    let selectedClient = null;
+    let products = [];
+    let stockItems = [];
+    let dailySalesTotal = 0;
+    
+    // Initialize Flatpickr Calendar
+    flatpickr("#calendar", {
+      dateFormat: "Y-m-d",
+      onChange: function(selectedDates, dateStr, instance) {
+        fetchDailySales(dateStr);
+      }
+    });
+
+    // Fetch Daily Sales
+async function fetchDailySales(date = null) {
+  try {
+    // If no date is provided, use today's date
+    const today = new Date().toISOString().split('T')[0];
+    const dateToFetch = date || today;
+    
+    const response = await fetch(`${backendUrl}/sales?date=${dateToFetch}`);
+    const data = await response.json();
+    
+    // Calculate total sales for the day
+    const totalSales = data.sales.reduce((sum, sale) => sum + sale.total_amount, 0);
+    
+    // Update the daily sales display
+    document.getElementById('dailySalesTotal').textContent = totalSales.toFixed(2);
+    
+    // Also update the daily sales in the overview section if it exists
+    const overviewDailySales = document.getElementById('totalSales');
+    if (overviewDailySales) {
+      overviewDailySales.textContent = totalSales.toFixed(2);
+    }
+    
+    return totalSales;
+  } catch (error) {
+    console.error('Error fetching daily sales:', error);
+    document.getElementById('dailySalesTotal').textContent = 'Error';
+    return 0;
+  }
+}
+
+// Initialize daily sales when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+  // Fetch today's sales immediately
+  fetchDailySales();
+  
+  // Set up periodic refresh (every 5 minutes)
+  setInterval(fetchDailySales, 5 * 60 * 1000);
+  
+  // Also update when the calendar date changes
+  flatpickr("#calendar", {
+    dateFormat: "Y-m-d",
+    defaultDate: new Date(), // Default to today
+    onChange: function(selectedDates, dateStr, instance) {
+      fetchDailySales(dateStr);
+    }
+  });
+});
+
+
+    // Fetch Products and Stock from Backend
+    async function fetchProducts() {
+      const response = await fetch(`${backendUrl}/products/`);
+      const data = await response.json();
+      products = data.products;
+      populateItemSelect();
+    }
+
+    async function fetchStock() {
+      const response = await fetch(`${backendUrl}/stock/`);
+      const data = await response.json();
+      stockItems = data.stock;
+    }
+
+    // Populate Item Select Dropdown
+    function populateItemSelect() {
+  const itemSelect = document.getElementById('itemSelect');
+  itemSelect.innerHTML = '<option value="" disabled selected>Select Item</option>' +
+    products.map(product => `
+      <option value="${product.name}" data-type="${product.type}" data-description="${product.type}">
+        ${product.name} (${product.type})
+      </option>
+    `).join('');
+}
+
+    // Open Add Item Modal
+    function openAddItemModal() {
+      fetchProducts();
+      document.getElementById('addItemModal').classList.remove('hidden');
+    }
+
+    // Add Item to Sale
+    document.getElementById('addItemForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const itemName = document.getElementById('itemSelect').value;
+  const quantity = parseFloat(document.getElementById('itemQuantity').value);
+
+  // Fetch product details
+  const product = products.find(p => p.name === itemName);
+  if (!product) {
+    alert('Product not found!');
+    return;
+  }
+
+  // Fetch stock details
+  const stockItem = stockItems.find(item => item.product_name === itemName);
+  if (!stockItem || stockItem.quantity < quantity) {
+    alert('Insufficient stock!');
+    return;
+  }
+
+  const total = product.selling_price * quantity;
+  currentSale.push({ 
+    itemName, 
+    description: product.type, // Use product type as description
+    quantity, 
+    unitPrice: product.selling_price, 
+    total 
+  });
+  updateSaleTable();
+  closeModal('addItemModal');
+});
+
+    // Update Sale Table
+    function updateSaleTable() {
+  const saleTableBody = document.getElementById('saleTableBody');
+  saleTableBody.innerHTML = currentSale.map((item, index) => `
+    <tr>
+      <td>${item.itemName}</td>
+      <td>${item.description || 'N/A'}</td> <!-- Add description column -->
+      <td>${item.quantity}</td>
+      <td><input type="number" class="editable-unit-price" onchange="updateUnitPrice(${index}, this.value)" placeholder="${item.unitPrice.toFixed(2)}"></td>
+      <td>${item.total.toFixed(2)}</td>
+      <td><button onclick="removeItem(${index})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button></td>
+    </tr>
+  `).join('');
+
+  // Update Total
+  const total = currentSale.reduce((sum, item) => sum + item.total, 0);
+  document.getElementById('saleTotal').textContent = total.toFixed(2);
+}
+
+    // Update Unit Price
+    function updateUnitPrice(index, newPrice) {
+      const item = currentSale[index];
+      item.unitPrice = parseFloat(newPrice);
+      item.total = item.unitPrice * item.quantity;
+      updateSaleTable();
+    }
+
+    // Remove Item from Sale
+    function removeItem(index) {
+      currentSale.splice(index, 1);
+      updateSaleTable();
+    }
+
+    // Open Add Client Modal
+    function openAddClientModal() {
+      document.getElementById('addClientModal').classList.remove('hidden');
+    }
+
+    // Add Client
+    document.getElementById('addClientForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const clientName = document.querySelector('#addClientForm input[type="text"]').value;
+      const clientEmail = document.querySelector('#addClientForm input[type="text"]').value;
+      const clientPhone = document.querySelector('#addClientForm input[type="text"]').value;
+
+      // Send data to the backend
+      const response = await fetch(`${backendUrl}/clients/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: clientName,
+          email: clientEmail,
+          phone: clientPhone,
+        }),
+      });
+
+      if (response.ok) {
+        alert('Client added successfully!');
+        e.target.reset();
+        closeModal('addClientModal');
+      } else {
+        alert('Failed to add client.');
+      }
+    });
+
+    // Open Choose Client Modal
+    async function openChooseClientModal() {
+      // Fetch clients from the backend
+      const response = await fetch(`${backendUrl}/clients/`);
+      const data = await response.json();
+      clients = data.clients;
+
+      // Populate the client list
+      const clientList = document.getElementById('clientList');
+      clientList.innerHTML = clients.map(client => `
+        <div class="flex justify-between items-center p-2 border-b dark:border-gray-700">
+          <span>${client.name}</span>
+          <button onclick="selectClient('${client.name}')" class="gray-button">Select</button>
+        </div>
+      `).join('');
+
+      // Show the modal
+      document.getElementById('chooseClientModal').classList.remove('hidden');
+    }
+
+    // Select Client
+    function selectClient(clientName) {
+      selectedClient = clients.find(client => client.name === clientName);
+      document.getElementById('selectedClientName').textContent = `Bill to : ${selectedClient.name}`;
+      closeModal('chooseClientModal');
+    }
+
+    // Close Modal
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+    }
+
+   function numberToWords(num) {
+  const units = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+  const teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+  const tens = ["", "Ten", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+
+  if (num === 0) return "Zero";
+
+  function convertChunk(chunk) {
+    if (chunk === 0) return "";
+    let words = "";
+    if (chunk >= 100) {
+      words += units[Math.floor(chunk / 100)] + " Hundred ";
+      chunk %= 100;
+    }
+    if (chunk >= 20) {
+      words += tens[Math.floor(chunk / 10)] + " ";
+      chunk %= 10;
+    } else if (chunk >= 10) {
+      words += teens[chunk - 10] + " ";
+      chunk = 0;
+    }
+    if (chunk > 0) {
+      words += units[chunk] + " ";
+    }
+    return words.trim();
+  }
+
+  let words = "";
+  if (num >= 1000000000) {
+    const billionChunk = Math.floor(num / 1000000000);
+    words += convertChunk(billionChunk) + " Billion ";
+    num %= 1000000000;
+  }
+  if (num >= 1000000) {
+    const millionChunk = Math.floor(num / 1000000);
+    words += convertChunk(millionChunk) + " Million ";
+    num %= 1000000;
+  }
+  if (num >= 1000) {
+    const thousandChunk = Math.floor(num / 1000);
+    words += convertChunk(thousandChunk) + " Thousand ";
+    num %= 1000;
+  }
+  words += convertChunk(num);
+
+  return words.trim() + " Shillings Only";
+}
+
+  async function generateReceipt() {
+  if (currentSale.length === 0) {
+    alert('No items in the sale!');
+    return;
+  }
+
+  if (!selectedClient) {
+    alert('Please select a client before generating the receipt.');
+    return;
+  }
+
+  const total = currentSale.reduce((sum, item) => sum + item.total, 0);
+
+  // Generate receipt number
+  const currentYear = new Date().getFullYear();
+  const receiptNumber = `${String(getNextReceiptNumber()).padStart(3, '0')}/${currentYear}`;
+
+  // Convert total to words
+  const amountInWords = numberToWords(Math.floor(total));
+
+  // Prepare the sale data
+  const saleData = {
+    client_name: selectedClient.name,
+    receipt_number: receiptNumber,
+    items: currentSale.map(item => ({
+      name: item.itemName,
+      description: item.description || "No description", // Include description
+      type: item.type || "product",
+      quantity: item.quantity,
+      unit_price: item.unitPrice,
+      total: item.total,
+    })),
+    total_amount: total,
+  };
+
+  // Send the sale data to the backend
+  try {
+    const response = await fetch(`${backendUrl}/sales/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(saleData),
+    });
+
+    if (response.ok) {
+      alert('Sale created and stock updated successfully!');
+
+      // Generate the receipt PDF
+      const doc = new jsPDF();
+
+      // Add receipt styling
+      doc.setFont("Courier");
+      doc.setFontSize(12);
+
+      // Function to generate a single receipt
+      const generateSingleReceipt = (doc, yOffset) => {
+        // Header
+        doc.setFontSize(18);
+        doc.text("NDYAKURUNGI ITECH COMPUTER SOLUTIONS", 105, 10 + yOffset, null, null, 'center');
+        doc.setFontSize(14);
+
+        // Receipt Number (Left of the box)
+        doc.setTextColor(255, 0, 0);
+        doc.text(`No: ${receiptNumber}`, 10, 22 + yOffset);
+        doc.setTextColor(0, 0, 0);
+
+        // Box around "RECEIPT/TAX INVOICE"
+        doc.setDrawColor(0);
+        doc.rect(70, 16 + yOffset, 90, 10);
+        doc.text("RECEIPT/TAX INVOICE", 115, 22 + yOffset, null, null, 'center');
+
+        doc.setFontSize(12);
+        doc.text("Name it, we will provide & deliver it", 105, 30 + yOffset, null, null, 'center');
+        doc.text("Location: Kasese | TIN: 1003911766", 105, 36 + yOffset, null, null, 'center');
+
+        doc.text(generateDashes(190), 10, 42 + yOffset);
+
+        // Client Information (Inline)
+        const clientInfo = `Client Name: ${selectedClient.name}`;
+        doc.text(clientInfo, 10, 50 + yOffset);
+
+        // Date (Pushed to the right)
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 160, 58 + yOffset, null, null, 'right');
+        doc.text(generateDashes(190), 10, 64 + yOffset);
+
+        // Items Table
+        let yPos = 70 + yOffset;
+        doc.text("Item", 10, yPos);
+        doc.text("Qty", 100, yPos);
+        doc.text("Price", 130, yPos);
+        doc.text("Total", 170, yPos);
+        yPos += 10;
+
+        currentSale.forEach((item) => {
+          doc.text(item.itemName, 10, yPos); // Product name
+          doc.text(`(${item.description})`, 10, yPos + 5); // Description below product name
+          doc.text(item.quantity.toString(), 100, yPos);
+          doc.text(`Ugx.${item.unitPrice.toFixed(2)}`, 130, yPos);
+          doc.text(`Ugx.${item.total.toFixed(2)}`, 170, yPos);
+          yPos += 15; // Adjust spacing to accommodate description
+        });
+
+        // Total Paid and Balance (Inline)
+        doc.text(generateDashes(190), 10, yPos); // Full-width dashes
+        yPos += 10;
+        const totalPaidInfo = `Total Paid: ......................Balance: ......................`;
+        doc.text(totalPaidInfo, 10, yPos);
+        yPos += 10;
+        doc.text(`Total Bill in Words: ${amountInWords}`, 10, yPos);
+        yPos += 10;
+        doc.text("PAYMENT METHOD: Cash/Cheque", 10, yPos);
+        
+        // Signature and Stamp (Inline with dashes below)
+        yPos += 15;
+        doc.text("Client's Signature: ___________________", 10, yPos);
+        doc.text("Authorized Official: ___________________", 110, yPos);
+        yPos += 10;
+
+        // Footer
+        yPos += 10;
+        doc.setFontSize(10);
+        doc.text("Thank you for your purchase!", 10, yPos);
+        doc.text("Contact: +256394812457 | Email: info@ni-computer-solutions.tech", 10, yPos + 6);
+        doc.text("website: https://ni-computer-solutions.tech", 10, yPos+10);
+      };
+
+      // Generate the first receipt
+      generateSingleReceipt(doc, 0);
+
+      // Save the PDF with the format "receipt_client_name.pdf"
+      const fileName = `receipt_${selectedClient.name.replace(/\s+/g, '_')}.pdf`;
+      doc.save(fileName);
+
+      // Clear the current sale
+      currentSale = [];
+      updateSaleTable();
+      fetchSalesHistory();
+    } else {
+      alert('Failed to create sale.');
+    }
+  } catch (error) {
+    console.error('Error creating sale:', error);
+    alert('Failed to create sale.');
+  }
+}
+    // Function to generate a string of dashes of a specific length
+function generateDashes(length) {
+    return '-'.repeat(length);
+}
+
+// Function to generate the next receipt number
+let receiptCounter = 0; // This should be persisted in your backend or localStorage
+function getNextReceiptNumber() {
+    receiptCounter += 1;
+    // Save the counter to localStorage or backend for persistence
+    localStorage.setItem('receiptCounter', receiptCounter);
+    return receiptCounter;
+}
+
+// Initialize receipt counter from localStorage
+function initializeReceiptCounter() {
+    const savedCounter = localStorage.getItem('receiptCounter');
+    if (savedCounter) {
+        receiptCounter = parseInt(savedCounter, 10);
+    }
+}
+
+// Call this function when the page loads
+initializeReceiptCounter();
+    
+    // Fetch Sales History
+    async function fetchSalesHistory() {
+      try {
+        const response = await fetch(`${backendUrl}/sales/`);
+        const data = await response.json();
+        salesHistory = data.sales;
+        updateSalesHistory();
+      } catch (error) {
+        console.error('Error fetching sales history:', error);
+      }
+    }
+
+    // Update Sales History Table
+    function updateSalesHistory() {
+      const salesHistoryBody = document.getElementById('salesHistoryBody');
+      salesHistoryBody.innerHTML = salesHistory.map(sale => `
+        <tr>
+          <td>${new Date(sale.created_at).toLocaleDateString()}</td>
+          <td>${sale.client_name}</td>
+          <td>
+            <ul>
+              ${sale.items.map(item => `
+                <li>${item.name} - ${item.quantity} x ${item.unit_price.toFixed(2)} = ${item.total.toFixed(2)}</li>
+              `).join('')}
+            </ul>
+          </td>
+          <td>${sale.total_amount.toFixed(2)}</td>
+          <td>
+            <button onclick="editSale('${sale.id}')" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>
+            <button onclick="deleteSale('${sale.id}')" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join('');
+    }
+// Fetch Services from Backend
+async function fetchServices() {
+  try {
+    const response = await fetch(`${backendUrl}/services/`);
+    const data = await response.json();
+    return data.services; // Array of services
+  } catch (error) {
+    console.error('Error fetching services:', error);
+    return [];
+  }
+}
+
+// Populate Service Select Dropdown
+async function populateServiceSelect() {
+  const services = await fetchServices();
+  const serviceSelect = document.getElementById('serviceSelect');
+  serviceSelect.innerHTML = '<option value="" disabled selected>Select Service</option>' +
+    services.map(service => `
+      <option value="${service.name}" data-price="${service.price}" data-description="${service.description}">
+        ${service.name} (Ugx.${service.price})
+      </option>
+    `).join('');
+}
+   
+
+// Open Select Service Modal
+async function openSelectServiceModal() {
+  await populateServiceSelect(); // Fetch and populate services before showing the modal
+  document.getElementById('selectServiceModal').classList.remove('hidden');
+}
+
+// Add Service to Sale
+document.getElementById('selectServiceForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const serviceName = document.getElementById('serviceSelect').value;
+  const quantity = parseFloat(document.getElementById('serviceQuantity').value);
+
+  // Get the selected service's price
+  const serviceSelect = document.getElementById('serviceSelect');
+  const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+  const unitPrice = parseFloat(selectedOption.getAttribute('data-price'));
+  const description = selectedOption.getAttribute('data-description'); // Add description
+
+  if (!serviceName || !quantity || isNaN(unitPrice)) {
+    alert('Please select a service and enter a valid quantity.');
+    return;
+  }
+
+  const total = unitPrice * quantity;
+  currentSale.push({ 
+    itemName: serviceName, 
+    type: "service", 
+    description, // Add description
+    quantity, 
+    unitPrice, 
+    total 
+  });
+  updateSaleTable();
+  closeModal('selectServiceModal');
+});
+    
+    // Edit Sale
+async function editSale(saleId) {
+  // Fetch the sale details by ID
+  try {
+    const response = await fetch(`${backendUrl}/sales/${saleId}`);
+    const sale = await response.json();
+
+    // Populate the current sale with the fetched sale details
+    currentSale = sale.items.map(item => ({
+      itemName: item.name,
+      quantity: item.quantity,
+      unitPrice: item.unit_price,
+      total: item.total,
+    }));
+
+    // Update the sale table and total
+    updateSaleTable();
+
+    // Set the selected client
+    selectedClient = { name: sale.client_name };
+    document.getElementById('selectedClientName').textContent = `Bill to : ${selectedClient.name}`;
+
+    alert('Sale loaded for editing. Update the sale and generate a new receipt.');
+  } catch (error) {
+    console.error('Error fetching sale:', error);
+    alert('Failed to load sale for editing.');
+  }
+}
+
+// Delete Sale
+async function deleteSale(saleId) {
+  if (confirm('Are you sure you want to delete this sale?')) {
+    try {
+      const response = await fetch(`${backendUrl}/sales/${saleId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        alert('Sale deleted successfully!');
+        fetchSalesHistory(); // Refresh the sales history
+      } else {
+        alert('Failed to delete sale.');
+      }
+    } catch (error) {
+      console.error('Error deleting sale:', error);
+      alert('Failed to delete sale.');
+    }
+  }
+}
+
+    // Initialize
+    fetchProducts();
+    fetchStock();
+    fetchSalesHistory();
+    resetDailySales();
+  </script>
+</body>
+</html>
