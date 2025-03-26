@@ -9,6 +9,136 @@
       margin-bottom: 15px;
       color: white;
     }
+    /* Notification dropdown container */
+.notification-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Notification icon and text */
+.action-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.action-item:hover {
+  background-color: #f3f4f6; /* Light gray background on hover */
+}
+
+/* Notification badge (red circle) */
+.notification-badge {
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  display: none; /* Hidden by default */
+}
+
+/* Notification list (dropdown) */
+.notification-list {
+  position: absolute;
+  right: 0;
+  top: 40px; /* Position below the notification icon */
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-height: 300px;
+  overflow-y: auto;
+  width: 300px;
+  z-index: 1000;
+  padding: 10px;
+}
+
+/* Scrollbar styling */
+.notification-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Hide notification list by default */
+.notification-list.hidden {
+  display: none;
+}
+
+/* Notification item */
+.notification-item {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+/* Highlight unread notifications */
+.notification-item.unread {
+  background-color: #f0f8ff; /* Light blue background */
+  font-weight: bold;
+}
+
+/* Hover effect */
+.notification-item:hover {
+  background-color: #f9f9f9;
+}
+    /* Notification list (dropdown) */
+.notification-list {
+  position: absolute;
+  right: 0;
+  top: 40px; /* Position below the notification icon */
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-height: 150px; /* Limit height to show only 3 notifications */
+  overflow-y: auto; /* Add scrollbar */
+  width: 300px;
+  z-index: 1000;
+  padding: 10px;
+}
+
+/* Scrollbar styling */
+.notification-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
     .quick-actions {
       display: flex;
       justify-content: center;
