@@ -424,6 +424,22 @@
 .notification-list::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+    #pendingTasksList::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  #pendingTasksList::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  #pendingTasksList::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 8px;
+  }
+
+  #pendingTasksList::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+  }
 
   </style>
   <meta charset="UTF-8">
@@ -581,12 +597,22 @@
 
 
 <div class="pending-tasks-card bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
-  <h2 class="text-xl font-semibold mb-4 dark:text-white"><i class="fas fa-tasks mr-2"></i>Pending Tasks</h2>
-  <div id="pendingTasksList" class="space-y-2">
-    <!-- Loading indicator will be shown here initially -->
+  <h2 class="text-xl font-semibold mb-4 dark:text-white">
+    <i class="fas fa-tasks mr-2"></i>Pending Tasks
+  </h2>
+
+  <!-- Scrollable container -->
+  <div id="pendingTasksList" class="space-y-2 max-h-64 overflow-y-auto pr-2">
+    <!-- Example task items -->
     <div class="loading-container">
       <div class="loading"></div>
     </div>
+    <!-- Example task -->
+    <!--
+    <div class="p-3 bg-gray-100 dark:bg-gray-700 rounded-md">
+      Finish UI redesign
+    </div>
+    -->
   </div>
 </div>
 
