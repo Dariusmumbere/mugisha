@@ -751,12 +751,6 @@ document.addEventListener('DOMContentLoaded', () => {
         doc.text(`Total Bill in Words: ${amountInWords}`, 10, yPos);
         yPos += 10;
         doc.text("PAYMENT METHOD: Cash/Cheque", 10, yPos);
-        
-        // Signature and Stamp (Inline with dashes below)
-        yPos += 15;
-        doc.text("Client's Signature: ___________________", 10, yPos);
-        doc.text("Authorized Official: ___________________", 110, yPos);
-        yPos += 10;
 
         // Footer
         yPos += 10;
